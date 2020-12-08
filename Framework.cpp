@@ -13,6 +13,10 @@ void Scope::insert(const RetType &newVar) {
     identifiers.push_back(newVar);
 }
 
+Scope::~Scope() {
+    output::endScope();
+}
+
 bool Framework::contains(const string &name) {
     std::stack<Scope> copyOfScopesStack = scopes;
     while (!copyOfScopesStack.empty()){

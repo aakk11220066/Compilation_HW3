@@ -45,7 +45,7 @@ Program:		Funcs {output::printProductionRule(1);};
 Funcs:			/*epsilon*/ {output::printProductionRule(2);}
                     |FuncDecl Funcs { output::printProductionRule(3);};
 FuncDecl:		RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE{output::printProductionRule(4);} ;
-RetType:		Type {Framework.insertIntoTopScope(RetType(yylval))} //FIXME: use yylval to get Node containing data I need
+RetType:		Type {Framework.insertIntoTopScope(RetType(yylval));} //FIXME: use yylval to get Node containing data I need
                     | VOID {output::printProductionRule(6);};
 Formals:		/*epsilon*/ {output::printProductionRule(7);}
                     | FormalsList {output::printProductionRule(8);} ;

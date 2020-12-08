@@ -24,6 +24,8 @@ public:
 
     bool contains(const string& name);
 
+    virtual ~Scope();
+
     void insert(const RetType& newVar);
 
     explicit Scope(enum ScopeType scopeType);
