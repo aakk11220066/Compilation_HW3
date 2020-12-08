@@ -39,57 +39,65 @@
 
 
 %%
+//TODO: ensure type safety on everything (a value can become it's own type.  A byte can become an int.) ("in" relop is used byte/int in set)
+//TODO: errors
+//TODO: print, printi
+//TODO: complete Framework class
+//TODO: Recursion problem - undefined at call time
+//TODO: ask Piazza about if/else/while scope
+//TODO: enforce size limitations on set and byte (255)
+//TODO: enforce existence of void main() function
 
 
-Program:		Funcs {output::printProductionRule(1);};
-Funcs:			/*epsilon*/ {output::printProductionRule(2);}
-                    |FuncDecl Funcs { output::printProductionRule(3);};
-FuncDecl:		RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE{output::printProductionRule(4);} ;
-RetType:		Type {Framework.insertIntoTopScope(RetType(yylval));} //FIXME: use yylval to get Node containing data I need
-                    | VOID {output::printProductionRule(6);}; //KIV
-Formals:		/*epsilon*/ {output::printProductionRule(7);}
-                    | FormalsList {output::printProductionRule(8);} ;
-FormalsList:	FormalDecl {output::printProductionRule(9);}
-                    | FormalDecl COMMA FormalsList{output::printProductionRule(10);} ;
-FormalDecl:		Type ID{output::printProductionRule(11);} ;
-Statements:		Statement {output::printProductionRule(12);}
-                    | Statements Statement{output::printProductionRule(13);} ;
-Statement:		LBRACE Statements RBRACE {output::printProductionRule(14);}
-                    | Type ID SC {output::printProductionRule(15);}
-                    | Type ID ASSIGN Exp SC {output::printProductionRule(16);}
-                    | ID ASSIGN Exp SC {output::printProductionRule(17);}
-                    | Call SC{output::printProductionRule(18);} 
-                    | RETURN SC {output::printProductionRule(19);}
-                    | RETURN Exp SC {output::printProductionRule(20);}
-                    | IF LPAREN Exp RPAREN Statement{output::printProductionRule(21);} 
-                    | IF LPAREN Exp RPAREN Statement ELSE Statement {output::printProductionRule(22);}
-                    | WHILE LPAREN Exp RPAREN Statement{output::printProductionRule(23);} 
-                    | BREAK SC{output::printProductionRule(24);} 
-                    | CONTINUE SC{output::printProductionRule(25);} ;
-Call:			ID LPAREN ExpList RPAREN {output::printProductionRule(26);}
-                    | ID LPAREN RPAREN {output::printProductionRule(27);};
-ExpList:		Exp {output::printProductionRule(28);}
-                    | Exp COMMA ExpList {output::printProductionRule(29);};
-Type:			INT {output::printProductionRule(30);}
-                    | BYTE{output::printProductionRule(31);} 
-                    | BOOL {output::printProductionRule(32);}
-                    | SET LBRACKET NUM DOTS NUM RBRACKET {output::printProductionRule(33);};
-Exp:			LPAREN Exp RPAREN {output::printProductionRule(34);}
-                    | Exp BINOP_ADDITIVE Exp {output::printProductionRule(35);}
-                    | Exp BINOP_MULTIPLICATIVE Exp {output::printProductionRule(35);}
-                    | ID {output::printProductionRule(36);}
-                    | Call {output::printProductionRule(37);}
-                    | NUM {output::printProductionRule(38);}
-                    | NUM B {output::printProductionRule(39);}
-                    | STRING {output::printProductionRule(40);}
-                    | TRUE {output::printProductionRule(41);}
-                    | FALSE {output::printProductionRule(42);}
-                    | NOT Exp {output::printProductionRule(43);}
-                    | Exp AND Exp {output::printProductionRule(44);}
-                    | Exp OR Exp{output::printProductionRule(45);} 
-                    | Exp RELOP_RELATIONAL Exp {output::printProductionRule(46);}
-                    | Exp RELOP_EQUALITY Exp {output::printProductionRule(46);}
-                    | LPAREN Type RPAREN Exp {output::printProductionRule(47);};
+Program:		Funcs {output::printProductionRule(1);}; // TODO: add global scope to framework
+Funcs:			/*epsilon*/ {output::printProductionRule(2);} //nothing
+                    |FuncDecl Funcs { output::printProductionRule(3);}; //nothing
+FuncDecl:		RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE{Framework.insertFunction(, $1.type)} ; // TODO: add function to symbol table with name, type.  Also add parameters (=list of names, types) to symbol table + function scope
+RetType:		Type {$$ = RetType($1.type)} // TODO: extract type from Type
+                    | VOID {output::printProductionRule(6);}; //TODO: RetType.type = "VOID"
+Formals:		/*epsilon*/ {output::printProductionRule(7);} //nothing
+                    | FormalsList {output::printProductionRule(8);} ; // TODO: extract names, types from FormalsList
+FormalsList:	FormalDecl {output::printProductionRule(9);} // TODO: extract name, type from FormalDecl (create list of length 1)
+                    | FormalDecl COMMA FormalsList{output::printProductionRule(10);} ; //TODO: extract name, type from FormalDecl and append to list of names, types extracted from FormalsList
+FormalDecl:		Type ID{output::printProductionRule(11);} ; // TODO: construct Node with name, type
+Statements:		Statement {output::printProductionRule(12);} //nothing
+                    | Statements Statement{output::printProductionRule(13);} ; /nothing
+Statement:		LBRACE Statements RBRACE {output::printProductionRule(14);} // TODO: add scope to stack
+                    | Type ID SC {output::printProductionRule(15);} // TODO: add variable to symbol table + top scope with appropriate name, type
+                    | Type ID ASSIGN Exp SC {output::printProductionRule(16);} // TODO: add variable to symbol table + top scope with appropriate name, type
+                    | ID ASSIGN Exp SC {output::printProductionRule(17);} //nothing
+                    | Call SC{output::printProductionRule(18);} //nothing
+                    | RETURN SC {output::printProductionRule(19);} // TODO: ensure that is in function, and in *correct* type of function (return-type safety)
+                    | RETURN Exp SC {output::printProductionRule(20);} // TODO: ensure that is in function, and in *correct* type of function (return-type safety)
+                    | IF LPAREN Exp RPAREN Statement{output::printProductionRule(21);} // TODO: add new scope to stack; ensure type safety
+                    | IF LPAREN Exp RPAREN Statement ELSE Statement {output::printProductionRule(22);} // TODO: add 2 new scopes to stack consecutively; ensure type safety
+                    | WHILE LPAREN Exp RPAREN Statement{output::printProductionRule(23);}  // TODO: add new scope to stack; ensure type safety
+                    | BREAK SC{output::printProductionRule(24);}  // TODO: ensure that top scope on stack is loop-type
+                    | CONTINUE SC{output::printProductionRule(25);} ; // TODO: ensure that top scope on stack is loop-type
+Call:			ID LPAREN ExpList RPAREN {output::printProductionRule(26);} // TODO: extract name from ID, access symbol table to get type; Ensure type safety on ExpList (based on symbol table)
+                    | ID LPAREN RPAREN {output::printProductionRule(27);}; // TODO: extract name from ID, access symbol table to get type
+ExpList:		Exp {output::printProductionRule(28);} // TODO: extract type from Exp (create list of length 1)
+                    | Exp COMMA ExpList {output::printProductionRule(29);}; //TODO: extract type from Exp and append to list of types extracted from ExpList
+Type:			INT {output::printProductionRule(30);} // TODO: Construct Type with type=="INT"
+                    | BYTE{output::printProductionRule(31);} // TODO: Construct Type with type=="BYTE"
+                    | BOOL {output::printProductionRule(32);} // TODO: Construct Type with type=="BOOL"
+                    | SET LBRACKET NUM DOTS NUM RBRACKET {output::printProductionRule(33);}; // TODO: Construct Type with type=="SET"
+Exp:			LPAREN Exp RPAREN {output::printProductionRule(34);} // TODO: Construct Exp with type==exp.type
+                    | Exp BINOP_ADDITIVE Exp {output::printProductionRule(35);} // TODO: Ensure that both exp.type=="INT" or exp.type=="BYTE" or exp.type=="SET" (but only a single param); Construct Exp with most inclusive type (=set, if set is one of the operands)
+                    | Exp BINOP_MULTIPLICATIVE Exp {output::printProductionRule(35);} // TODO: Ensure that both exp.type=="INT" or exp.type=="BYTE" or exp.type=="SET" (but only a single param); Construct Exp with most inclusive type
+                    | ID {output::printProductionRule(36);} // TODO: Construct Exp with type==symbol_table[name].type
+                    | Call {output::printProductionRule(37);} // TODO: Construct Exp with type==Call.type
+                    | NUM {output::printProductionRule(38);} // TODO: Construct Exp with type=="INT"
+                    | NUM B {output::printProductionRule(39);} // TODO: Construct Exp with type=="BYTE"
+                    | STRING {output::printProductionRule(40);} // TODO: Construct Exp with type=="STRING" (useful only for calling print function)
+                    | TRUE {output::printProductionRule(41);} // TODO: Construct Exp with type=="BOOL"
+                    | FALSE {output::printProductionRule(42);} // TODO: Construct Exp with type=="BOOL"
+                    | NOT Exp {output::printProductionRule(43);} // TODO: Ensure that exp.type=="BOOL"; Construct Exp with type="BOOL"
+                    | Exp AND Exp {output::printProductionRule(44);} // TODO: Ensure that both exp.type=="BOOL"; Construct Exp with type="BOOL"
+                    | Exp OR Exp{output::printProductionRule(45);} // TODO: Ensure that both exp.type=="BOOL"; Construct Exp with type="BOOL"
+                    | Exp RELOP_RELATIONAL Exp {output::printProductionRule(46);} // TODO: Ensure that both exp.type=="INT" or exp.type=="BYTE"; Construct Exp with type="BOOL"
+                    | Exp RELOP_EQUALITY Exp {output::printProductionRule(46);} // TODO: Ensure that both exp.type is one of the following: NUM, NUM B, INT, BYTE; Construct Exp with type="BOOL"
+                    | LPAREN Type RPAREN Exp {output::printProductionRule(47);}; //CASTING TODO: ensure that Type.type=="INT" and Exp.type=="SET"; Construct Exp with type="INT"
 
 %%
 void yyerror(const char*){

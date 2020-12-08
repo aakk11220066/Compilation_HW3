@@ -10,11 +10,16 @@ bool Scope::contains(const string &name) {
 Scope::Scope(const Scope::ScopeType scopeType) : scopeType(scopeType) {}
 
 void Scope::insert(const RetType &newVar) {
+    nextOffset++;
     identifiers.push_back(newVar);
 }
 
 Scope::~Scope() {
     output::endScope();
+}
+
+int Scope::getNextOffset() const {
+    return nextOffset;
 }
 
 bool Framework::contains(const string &name) {
@@ -29,4 +34,8 @@ bool Framework::contains(const string &name) {
 void Framework::insertIntoTopScope(const RetType &newVar) {
     if (contains(newVar.name)) throw Exceptions::AlreadyExistsException();
     scopes.top().insert(newVar);
+}
+
+void Framework::addScope(const Scope &newScope) {
+    scopes.push(newScope);
 }

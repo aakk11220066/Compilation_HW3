@@ -6,13 +6,15 @@
 
 using std::string;
 
-class RetType{
+class RetType{ // FIXME
 public:
     const string name, type;
     const int offset;
     virtual ~RetType();
     RetType(const string &name, const string &type, int offset);
 };
+
+class Exp //contains only type
 
 
 #endif //HW3_NONTERMINALS_H

@@ -17,6 +17,7 @@
 class Scope{
 private:
     std::deque<RetType> identifiers;
+    int nextOffset = 0;
 public:
     enum ScopeType{IF, LOOP, FUNCTION};
 
@@ -24,11 +25,13 @@ public:
 
     bool contains(const string& name);
 
-    virtual ~Scope();
-
     void insert(const RetType& newVar);
 
-    explicit Scope(enum ScopeType scopeType);
+    int getNextOffset() const;
+
+    virtual ~Scope();
+
+    explicit Scope(enum ScopeType scopeType, int offset);
 };
 
 
@@ -42,6 +45,8 @@ private:
     static bool contains(const string& name);
 public:
     static void insertIntoTopScope(const RetType& newVar);
+    static void addScope(const Scope& newScope);
+    static bool functionExists(const std::string& id);
 };
 
 
