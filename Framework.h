@@ -17,17 +17,11 @@
 class Scope{
 private:
     std::deque<Variable> identifiers;
-    int nextOffset = 0;
+    int nextOffset;
 public:
-    enum ScopeType{IF, LOOP, FUNCTION};
-
-    const enum ScopeType scopeType;
-
-    bool contains(const string& name);
+    enum ScopeType{IF, LOOP, FUNCTION} scopeType;
 
     void insert(const Variable& newVar);
-
-    int getNextOffset() const;
 
     virtual ~Scope();
 
@@ -41,11 +35,12 @@ private:
     static std::stack<Scope> scopes;
     static std::stack<int> offsets;
     std::unordered_map<string, Symbol> symbol_table;
+
     static bool contains(const string& name);
 public:
-    static void insertVariableIntoTopScope(const Symbol &newVar);
+    static void insertVariableIntoTopScope(const Variable &newVar);
     static void addScope(enum Scope::ScopeType scopeType);
-    static bool addFunction(const std::string& id);
+    static bool addFunction(const Function &newFunc);
     Symbol& operator[](const string& name); //for accessing the symbol_table
 };
 

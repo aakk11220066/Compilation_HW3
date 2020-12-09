@@ -6,8 +6,7 @@
 
 Symbol::~Symbol() {
     output::printID(name, offset, type);
+    // TODO: tell Framework::symbol_table to remove this symbol
 }
 
-Symbol::Symbol(const string &name, const string &type, const int offset) : name(name), type(type), offset(offset) {
-
-}
+Symbol::Symbol(const string &name, const string &type) : name(name), type(type) {}

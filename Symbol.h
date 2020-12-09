@@ -3,15 +3,14 @@
 
 #include <string>
 #include "hw3_output.hpp"
-
 using std::string;
 
-class Symbol{ // FIXME
+class Symbol{
 public:
     const string name, type;
-    const int offset;
+    const int offset = 0;
     virtual ~Symbol();
-    Symbol(const string &name, const string &type, int offset);
+    Symbol(const string &name, const string &type);
 };
 
 class Function : public Symbol{};

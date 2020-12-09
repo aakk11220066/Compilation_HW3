@@ -1,15 +1,7 @@
 #include "Framework.h"
 
 
-bool Scope::contains(const string &name) {
-    for (const RetType& id : identifiers)
-        if (id.name == name) return true;
-    return false;
-}
-
-Scope::Scope(const Scope::ScopeType scopeType) : scopeType(scopeType) {}
-
-void Scope::insert(const RetType &newVar) {
+void Scope::insert(const Variable &newVar) {
     nextOffset++;
     identifiers.push_back(newVar);
 }
@@ -18,24 +10,13 @@ Scope::~Scope() {
     output::endScope();
 }
 
-int Scope::getNextOffset() const {
-    return nextOffset;
-}
-
-bool Framework::contains(const string &name) {
-    std::stack<Scope> copyOfScopesStack = scopes;
-    while (!copyOfScopesStack.empty()){
-        if (copyOfScopesStack.top().contains(name)) return true;
-        copyOfScopesStack.pop();
-    }
-    return false;
-}
-
-void Framework::insertVariableIntoTopScope(const Symbol &newVar) {
+//NOTE: must modify default offset of Variable to correct offset!
+void Framework::insertVariableIntoTopScope(const Variable &newVar) {
     if (contains(newVar.name)) throw Exceptions::AlreadyExistsException();
+    // TODO: modify offset of newVar
     scopes.top().insert(newVar);
 }
 
-void Framework::addScope(const Scope &newScope) {
-    scopes.push(newScope);
+Symbol &Framework::operator[](const string &name) {
+    return <#initializer#>;
 }
