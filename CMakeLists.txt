@@ -3,4 +3,4 @@ project(HW3)
 
 set(CMAKE_CXX_STANDARD 11)
 
-add_executable(HW3 Framework.cpp hw3_output.cpp NonTerminals.cpp Exceptions.h)
+add_executable(HW3 Framework.cpp hw3_output.cpp Symbol.cpp Exceptions.h)

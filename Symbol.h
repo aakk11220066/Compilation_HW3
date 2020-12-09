@@ -6,12 +6,12 @@
 
 using std::string;
 
-class RetType{ // FIXME
+class Symbol{ // FIXME
 public:
     const string name, type;
     const int offset;
-    virtual ~RetType();
-    RetType(const string &name, const string &type, int offset);
+    virtual ~Symbol();
+    Symbol(const string &name, const string &type, int offset);
 };
 
 class Exp //contains only type

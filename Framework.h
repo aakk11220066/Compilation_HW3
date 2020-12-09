@@ -11,12 +11,12 @@
 #include <stack>
 #include <deque>
 
-#include "NonTerminals.h"
+#include "Symbol.h"
 #include "Exceptions.h"
 
 class Scope{
 private:
-    std::deque<RetType> identifiers;
+    std::deque<Variable> identifiers;
     int nextOffset = 0;
 public:
     enum ScopeType{IF, LOOP, FUNCTION};
@@ -25,7 +25,7 @@ public:
 
     bool contains(const string& name);
 
-    void insert(const RetType& newVar);
+    void insert(const Variable& newVar);
 
     int getNextOffset() const;
 
@@ -40,11 +40,10 @@ class Framework {
 private:
     static std::stack<Scope> scopes;
     static std::stack<int> offsets;
-    //unnecessary - use contains method instead
-    //std::unordered_map<string, RetType*> identifiers;
+    std::unordered_map<string, Symbol> symbol_table;
     static bool contains(const string& name);
 public:
-    static void insertIntoTopScope(const RetType& newVar);
+    static void insertIntoTopScope(const Symbol& newVar);
     static void addScope(const Scope& newScope);
     static bool functionExists(const std::string& id);
 };

@@ -1,44 +1,57 @@
 %{
 	#include <iostream>
+	#include <string>
+	#include <stack>
 	using namespace std;
 	#include "Framework.h"
-	#include "NonTerminals.h"
-//	class Node{
-//		public:
-//			string text;
-//		Node(string yy_text){
-//			text = yy_text;
-//
-//		}
-//	};
+	#include "Symbol.h"
 
-//	#define YYSTYPE Node*
-	int yylex();
+	class NonTerminal{
+	public:
+	    const string name = "";
+	    const string type = "";
+	    stack<NonTerminal> namesAndTypes = stack<NonTerminal>();
 
-	void yyerror(const char*);
-    
+	    NonTerminal(const string& name, const string& type){
+	        this->name = name;
+	        this->type = type;
+	    }
+	};
+
+	//NonTerminal classes
+    class Program : public NonTerminal{};
+    class Funcs : public NonTerminal{};
+    class FuncDecl : public NonTerminal{};
+    class RetType : public NonTerminal{};
+    class Formals : public NonTerminal{};
+    class FormalsList : public NonTerminal{
+        FormalsList(const string& name, const string& type){
+            namesAndTypes.push(NonTerminal(name, type));
+        }
+        FormalsList(const string& name, const string& type, const stack& namesAndTypes){
+            this->namesAndTypes = namesAndTypes;
+            this->namesAndTypes.push(NonTerminal(name, type));
+        }
+    };
+	class FormalDecl : public NonTerminal{};
+    class Statements : public NonTerminal{};
+	class Statement : public NonTerminal{};
+	class Call : public NonTerminal{};
+	class ExpList : public NonTerminal{};
+    class Type : public NonTerminal{};
+    class Exp : public NonTerminal{};
+
     extern int yylineno;
-
     extern YYSTYPE yylval;
 
+    int yylex();
+    void yyerror(const char*);
 %}
-
-%right ASSIGN
-%left OR 
-%left AND 
-%left RELOP_EQUALITY
-%nonassoc RELOP_RELATIONAL
-%left BINOP_ADDITIVE 
-%left BINOP_MULTIPLICATIVE
-%right NOT
-%left SC RPAREN RBRACE RBRACKET
-%right LBRACE LPAREN LBRACKET
-
-%right COMMA WHILE ELSE IF
-%nonassoc TRUE FALSE RETURN BREAK CONTINUE DOTS ID NUM STRING SET INT BYTE B BOOL VOID
 
 
 %%
+
+
 //TODO: ensure type safety on everything (a value can become it's own type.  A byte can become an int.) ("in" relop is used byte/int in set)
 //TODO: errors
 //TODO: print, printi
@@ -50,15 +63,15 @@
 
 
 Program:		Funcs {output::printProductionRule(1);}; // TODO: add global scope to framework
-Funcs:			/*epsilon*/ {output::printProductionRule(2);} //nothing
-                    |FuncDecl Funcs { output::printProductionRule(3);}; //nothing
-FuncDecl:		RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE{Framework.insertFunction(, $1.type)} ; // TODO: add function to symbol table with name, type.  Also add parameters (=list of names, types) to symbol table + function scope
-RetType:		Type {$$ = RetType($1.type)} // TODO: extract type from Type
-                    | VOID {output::printProductionRule(6);}; //TODO: RetType.type = "VOID"
-Formals:		/*epsilon*/ {output::printProductionRule(7);} //nothing
-                    | FormalsList {output::printProductionRule(8);} ; // TODO: extract names, types from FormalsList
-FormalsList:	FormalDecl {output::printProductionRule(9);} // TODO: extract name, type from FormalDecl (create list of length 1)
-                    | FormalDecl COMMA FormalsList{output::printProductionRule(10);} ; //TODO: extract name, type from FormalDecl and append to list of names, types extracted from FormalsList
+Funcs:			/*epsilon*/ {} //DONE: nothing
+                    |FuncDecl Funcs {}; //DONE: nothing
+FuncDecl:		RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE{} ; // TODO: add function to symbol table with name, type.  Also add parameters (=list of names, types) to symbol table + function scope
+RetType:		Type {$$ = RetType($1.type);} // DONE: extract type from Type
+                    | VOID {$$ = RetType($1.type);}; //DONE: RetType.type = "VOID"
+Formals:		/*epsilon*/ {} //DONE: nothing
+                    | FormalsList {$$ = Formals($1.namesAndTypes);} ; // DONE: extract names, types from FormalsList
+FormalsList:	FormalDecl {$$ = FormalsList($1.name, $1.type);} // DONE: extract name, type from FormalDecl (create list of length 1)
+                    | FormalDecl COMMA FormalsList{$$ = FormalsList($1.name, $1.type, $3.namesAndTypes);} ; //DONE: extract name, type from FormalDecl and append to list of names, types extracted from FormalsList
 FormalDecl:		Type ID{output::printProductionRule(11);} ; // TODO: construct Node with name, type
 Statements:		Statement {output::printProductionRule(12);} //nothing
                     | Statements Statement{output::printProductionRule(13);} ; /nothing
