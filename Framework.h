@@ -31,7 +31,7 @@ public:
 
     virtual ~Scope();
 
-    explicit Scope(enum ScopeType scopeType, int offset);
+    Scope(enum ScopeType scopeType, int offset);
 };
 
 
@@ -43,9 +43,10 @@ private:
     std::unordered_map<string, Symbol> symbol_table;
     static bool contains(const string& name);
 public:
-    static void insertIntoTopScope(const Symbol& newVar);
-    static void addScope(const Scope& newScope);
-    static bool functionExists(const std::string& id);
+    static void insertVariableIntoTopScope(const Symbol &newVar);
+    static void addScope(enum Scope::ScopeType scopeType);
+    static bool addFunction(const std::string& id);
+    Symbol& operator[](const string& name); //for accessing the symbol_table
 };
 
 

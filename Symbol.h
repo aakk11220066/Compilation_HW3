@@ -14,7 +14,9 @@ public:
     Symbol(const string &name, const string &type, int offset);
 };
 
-class Exp //contains only type
+class Function : public Symbol{};
+
+class Variable : public Symbol{};
 
 
 #endif //HW3_NONTERMINALS_H

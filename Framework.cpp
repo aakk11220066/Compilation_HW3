@@ -31,7 +31,7 @@ bool Framework::contains(const string &name) {
     return false;
 }
 
-void Framework::insertIntoTopScope(const RetType &newVar) {
+void Framework::insertVariableIntoTopScope(const Symbol &newVar) {
     if (contains(newVar.name)) throw Exceptions::AlreadyExistsException();
     scopes.top().insert(newVar);
 }

@@ -4,8 +4,10 @@
 
 #include "Symbol.h"
 
-RetType::RetType(const string &name, const string &type, const int offset) : name(name), type(type), offset(offset) {}
-
-RetType::~RetType() {
+Symbol::~Symbol() {
     output::printID(name, offset, type);
+}
+
+Symbol::Symbol(const string &name, const string &type, const int offset) : name(name), type(type), offset(offset) {
+
 }
