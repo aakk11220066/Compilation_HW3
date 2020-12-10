@@ -24,7 +24,7 @@ public:
 public:
     enum ScopeType{IF, LOOP, FUNCTION, BLOCK} scopeType;
 
-    Variable& insert(const Variable& newVar);
+    Variable& insert(const Variable& newVar, unordered_map<string, Symbol*>& symbol_table);
 
     virtual ~Scope();
 

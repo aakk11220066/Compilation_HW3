@@ -3,8 +3,8 @@
 
 
 //NOTE: must modify default offset of Variable to correct offset!
-Variable& Scope::insert(const Variable &newVar) {
-    Variable addedVar = Variable(newVar.name, newVar.type, nextOffset++);
+Variable& Scope::insert(const Variable &newVar, unordered_map<string, Symbol*>& symbol_table) {
+    Variable addedVar = Variable(newVar.name, newVar.type, nextOffset++, symbol_table);
     variables.push_back(addedVar);
     return variables.back();
 }
@@ -21,7 +21,7 @@ int Scope::getNextOffset() const {
 
 void Framework::insertVariableIntoTopScope(const Variable &newVar) {
     if (contains(newVar.name)) throw Exceptions::AlreadyExistsException(0, newVar.name); //FIXME: 0 is only a placeholder number, should be lineno
-    Variable& addedVar = scopes.top().insert(newVar);
+    Variable& addedVar = scopes.top().insert(newVar, symbol_table);
     symbol_table.insert({newVar.name, &addedVar});
 }
 
@@ -29,7 +29,8 @@ void Framework::insertVariableIntoTopScope(const Variable &newVar) {
 void Framework::addFunction(const Function &newFunc) {
     if (contains(newFunc.name)) throw Exceptions::AlreadyExistsException(0, newFunc.name); //FIXME: 0 is only a placeholder number, should be lineno
     assert(newFunc.offset == 0);
-    functions.push_back(newFunc);
+    Function funcToAdd = Function(newFunc.name, newFunc.type, symbol_table);
+    functions.push_back(funcToAdd);
     Function& addedFunc = functions.back();
     symbol_table.insert({newFunc.name, &addedFunc});
 }
