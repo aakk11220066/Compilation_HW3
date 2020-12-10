@@ -11,11 +11,19 @@ public:
     const int offset = 0;
     virtual ~Symbol();
     Symbol(const string &name, const string &type);
+    Symbol(const string &name, const string &type, int offset);
 };
 
-class Function : public Symbol{};
+class Function : public Symbol{
+public:
+    Function(const string &name, const string &type);
+};
 
-class Variable : public Symbol{};
+class Variable : public Symbol{
+public:
+    Variable(const string &name, const string &type);
+    Variable(const string &name, const string &type, int offset);
+};
 
 
 #endif //HW3_NONTERMINALS_H
