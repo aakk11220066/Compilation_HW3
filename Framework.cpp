@@ -15,6 +15,10 @@ Scope::~Scope() {
 
 Scope::Scope(Scope::ScopeType scopeType, int offset) : scopeType(scopeType), nextOffset(offset){}
 
+Scope::ScopeType Scope::getScopeType() const {
+    return scopeType;
+}
+
 int Scope::getNextOffset() const {
     return nextOffset;
 }
@@ -29,7 +33,7 @@ void Framework::insertVariableIntoTopScope(const Variable &newVar) {
 void Framework::addFunction(const Function &newFunc) {
     if (contains(newFunc.name)) throw Exceptions::AlreadyExistsException(0, newFunc.name); //FIXME: 0 is only a placeholder number, should be lineno
     assert(newFunc.offset == 0);
-    Function funcToAdd = Function(newFunc.name, newFunc.type, symbol_table);
+    Function funcToAdd = Function(newFunc.name, newFunc.type, symbol_table, newFunc.getParameters());
     functions.push_back(funcToAdd);
     Function& addedFunc = functions.back();
     symbol_table.insert({newFunc.name, &addedFunc});
@@ -57,11 +61,15 @@ void Framework::addScope(enum Scope::ScopeType scopeType) {
     scopes.push(Scope(scopeType, scopes.top().getNextOffset()));
 }
 
+Scope &Framework::getTopScope() {
+    return scopes.top();
+}
+
 Framework::Framework() {
     scopes.push(Scope(Scope::BLOCK, 0));
 }
 
-Framework Framework::getInstance() {
+Framework& Framework::getInstance() {
     static Framework singleton = Framework();
     return singleton;
 }

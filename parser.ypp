@@ -110,7 +110,7 @@
 Program:		Funcs {output::printProductionRule(1);}; // TODO: add global scope to framework
 Funcs:			/*epsilon*/ {} //DONE: nothing
                     |FuncDecl Funcs {}; //DONE: nothing
-FuncDecl:		RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE{} ; // TODO: add function to symbol table with name, type.  Also add parameters (=list of names, types) to symbol table + function scope
+FuncDecl:		RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE{} ; // TODO: add Function to symbol table with name, type, list_of_params.  Also add parameters (=list of names, types) to symbol table + function scope
 RetType:		Type {$$ = RetType($1.type);} // DONE: extract type from Type
                     | VOID {$$ = RetType($1.type);}; //DONE: RetType.type = "VOID"
 Formals:		/*epsilon*/ {} //DONE: nothing
@@ -159,9 +159,9 @@ Statement:		LBRACE Statements RBRACE {Framework.addScope(Framework.scopeType.BLO
                         if(Framework.scopes.getTopScope().getType() != scopeType.LOOP){
                              return errorUnexpectedBreak(lineno);
                     }
-                     }  //TODO: need the functions in Framework: getTopScopes(), GetType()
+                     }  //TODO: need the functions in Framework: getTopScopes(), GetScopeType()
                     | CONTINUE SC{
-                        if(Framework.scopes.getTopScope().getType() != scopeType.LOOP){
+                        if(Framework.scopes.getTopScope().getScopeType() != scopeType.LOOP){
                             return errorUnexpectedBreak(lineno);}
                     }
 Call:			ID LPAREN ExpList RPAREN {
@@ -170,7 +170,7 @@ Call:			ID LPAREN ExpList RPAREN {
                         }
                         string type = Framework.symbol_table[$1.name].type; // check the syntax. need Framework.symbol_table[$1.name] to be a "Function" struct
                         if(!Framework.symbol_table[$1.name].getList() == $3.getList()){
-                            return errorPrototypeMismatch(lineno,$1.name,Framework.symbol_table[$1.name].getList());
+                            return errorPrototypeMismatch(lineno,$1.name,Framework.symbol_table[$1.name].getParameters());
                         }
                         $$ = new Call ($1.name, type)
                         }
