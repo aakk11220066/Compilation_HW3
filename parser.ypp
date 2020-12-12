@@ -96,13 +96,12 @@
 
 %%
 
-
 //TODO: ensure type safety on everything (a value can become it's own type.  A byte can become an int.) ("in" relop is used byte/int in set)
 //TODO: errors
 //TODO: print, printi
 //TODO: complete Framework class
 //TODO: Recursion problem - undefined at call time
-//TODO: ask Piazza about if/else/while scope
+//DONE: ask Piazza about if/else/while scope
 //TODO: enforce size limitations on set and byte (255)
 //TODO: enforce existence of void main() function
 
@@ -159,7 +158,7 @@ Statement:		LBRACE Statements RBRACE {Framework.addScope(Framework.scopeType.BLO
                         if(Framework.scopes.getTopScope().getType() != scopeType.LOOP){
                              return errorUnexpectedBreak(lineno);
                     }
-                     }  //TODO: need the functions in Framework: getTopScopes(), GetType()
+                     }  /
                     | CONTINUE SC{
                         if(Framework.scopes.getTopScope().getType() != scopeType.LOOP){
                             return errorUnexpectedBreak(lineno);}
