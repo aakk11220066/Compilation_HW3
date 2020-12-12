@@ -1,0 +1,6 @@
+	functions we need:
+		1)Framework.symbol_table[$1.name].getList() // if this is function - returns list<string>.
+		2) to implement "==" between two string list.
+		2)getTopScope() // return scope
+		3)getType() // return enum
+		
