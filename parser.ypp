@@ -40,12 +40,50 @@
         Statements(const string& type): type(type){}
     };
 	class Statement : public NonTerminal{
-	    Statement(const string& type): type(type){}
+	    public:
+            bool is_break;
+            bool is_continue;
+            Statement(const string& type): type(type), is_break(false), is_continue(false){}
+            Statement(const string& type, bool is_break, bool is_continue): type(type), is_break(is_break), is_continue(is_continue){}
 	};
 	class Call : public NonTerminal{};
-	class ExpList : public NonTerminal{};
-    class Type : public NonTerminal{};
-    class Exp : public NonTerminal{};
+	class ExpList : public NonTerminal{
+	    public:
+	    List<string> arrguments_list;
+	    ExpList(){
+	        arrguments_list = new List<string>();
+	    }
+	};
+    class Type : public NonTerminal{
+        Type(cont string& type) : type(type);
+    };
+    class Exp : public NonTerminal{
+        Exp(cont string& type) : type(type);
+    };
+
+    public static string typeBinopChecking(Exp e1, Exp e2){
+        if (e1.type == "INT" || e2.type == "INT"){
+            return "INT";
+        }
+        if(e1.type == "BYTE" || e2.type == "BYTE"){
+            return "BYTE";
+        }
+        if(e1.type == "SET" && e2.type == "SET"){
+            return error;// TODO: check the error type
+        }
+        return "SET";
+    }
+
+    public static string typeBinopMultiplicativeChecking(Exp e1, Exp e2){
+            if(e1.type == "SET" || e2.type == "SET"){
+                return error;// TODO: check the error type
+            }
+            if (e1.type == "INT" || e2.type == "INT"){
+                return "INT";
+            }
+            return "BYTE";
+        }
+
 
     //TODO: static function for the return issue
     extern int yylineno;
@@ -79,7 +117,7 @@ Formals:		/*epsilon*/ {} //DONE: nothing
                     | FormalsList {$$ = Formals($1.namesAndTypes);} ; // DONE: extract names, types from FormalsList
 FormalsList:	FormalDecl {$$ = FormalsList($1.name, $1.type);} // DONE: extract name, type from FormalDecl (create list of length 1)
                     | FormalDecl COMMA FormalsList{$$ = FormalsList($1.name, $1.type, $3.namesAndTypes);} ; //DONE: extract name, type from FormalDecl and append to list of names, types extracted from FormalsList
-FormalDecl:		Type ID{FormalDecl($1.type, $2);} ; // TODO: check -- construct Node with name, type
+FormalDecl:		Type ID{FormalDecl($1.type, $2.name);} ;
 Statements:		Statement {$$ = Statements($1.type)} //Done
                     | Statements Statement{} ; /nothing
 Statement:		LBRACE Statements RBRACE {Framework.addScope(Framework.scopeType.BLOCK);} // Done
@@ -87,37 +125,134 @@ Statement:		LBRACE Statements RBRACE {Framework.addScope(Framework.scopeType.BLO
                     | Type ID ASSIGN Exp SC {insertVariableIntoTopScope(Variable($2,$1.type));} // Done
                     | ID ASSIGN Exp SC {} //nothing
                     | Call SC {} //nothing
-                    | RETURN SC {$$ = Statement("VOID");} // Done
+                    | RETURN SC {$$ = new Statement("VOID");} // Done
                     | RETURN Exp SC {$$ = Statement($2.type)} // Done
-                    | IF LPAREN Exp RPAREN Statement{output::printProductionRule(21);} // TODO: add new scope to stack; ensure type safety
-                    | IF LPAREN Exp RPAREN Statement ELSE Statement {output::printProductionRule(22);} // TODO: add 2 new scopes to stack consecutively; ensure type safety
-                    | WHILE LPAREN Exp RPAREN Statement{output::printProductionRule(23);}  // TODO: add new scope to stack; ensure type safety
-                    | BREAK SC{output::printProductionRule(24);}  // TODO: ensure that top scope on stack is loop-type
-                    | CONTINUE SC{output::printProductionRule(25);} ; // TODO: ensure that top scope on stack is loop-type
-Call:			ID LPAREN ExpList RPAREN {output::printProductionRule(26);} // TODO: extract name from ID, access symbol table to get type; Ensure type safety on ExpList (based on symbol table)
-                    | ID LPAREN RPAREN {output::printProductionRule(27);}; // TODO: extract name from ID, access symbol table to get type
-ExpList:		Exp {output::printProductionRule(28);} // TODO: extract type from Exp (create list of length 1)
-                    | Exp COMMA ExpList {output::printProductionRule(29);}; //TODO: extract type from Exp and append to list of types extracted from ExpList
-Type:			INT {output::printProductionRule(30);} // TODO: Construct Type with type=="INT"
-                    | BYTE{output::printProductionRule(31);} // TODO: Construct Type with type=="BYTE"
-                    | BOOL {output::printProductionRule(32);} // TODO: Construct Type with type=="BOOL"
-                    | SET LBRACKET NUM DOTS NUM RBRACKET {output::printProductionRule(33);}; // TODO: Construct Type with type=="SET"
-Exp:			LPAREN Exp RPAREN {output::printProductionRule(34);} // TODO: Construct Exp with type==exp.type
-                    | Exp BINOP_ADDITIVE Exp {output::printProductionRule(35);} // TODO: Ensure that both exp.type=="INT" or exp.type=="BYTE" or exp.type=="SET" (but only a single param); Construct Exp with most inclusive type (=set, if set is one of the operands)
-                    | Exp BINOP_MULTIPLICATIVE Exp {output::printProductionRule(35);} // TODO: Ensure that both exp.type=="INT" or exp.type=="BYTE" or exp.type=="SET" (but only a single param); Construct Exp with most inclusive type
-                    | ID {output::printProductionRule(36);} // TODO: Construct Exp with type==symbol_table[name].type
-                    | Call {output::printProductionRule(37);} // TODO: Construct Exp with type==Call.type
-                    | NUM {output::printProductionRule(38);} // TODO: Construct Exp with type=="INT"
-                    | NUM B {output::printProductionRule(39);} // TODO: Construct Exp with type=="BYTE"
-                    | STRING {output::printProductionRule(40);} // TODO: Construct Exp with type=="STRING" (useful only for calling print function)
-                    | TRUE {output::printProductionRule(41);} // TODO: Construct Exp with type=="BOOL"
-                    | FALSE {output::printProductionRule(42);} // TODO: Construct Exp with type=="BOOL"
-                    | NOT Exp {output::printProductionRule(43);} // TODO: Ensure that exp.type=="BOOL"; Construct Exp with type="BOOL"
-                    | Exp AND Exp {output::printProductionRule(44);} // TODO: Ensure that both exp.type=="BOOL"; Construct Exp with type="BOOL"
-                    | Exp OR Exp{output::printProductionRule(45);} // TODO: Ensure that both exp.type=="BOOL"; Construct Exp with type="BOOL"
-                    | Exp RELOP_RELATIONAL Exp {output::printProductionRule(46);} // TODO: Ensure that both exp.type=="INT" or exp.type=="BYTE"; Construct Exp with type="BOOL"
-                    | Exp RELOP_EQUALITY Exp {output::printProductionRule(46);} // TODO: Ensure that both exp.type is one of the following: NUM, NUM B, INT, BYTE; Construct Exp with type="BOOL"
-                    | LPAREN Type RPAREN Exp {output::printProductionRule(47);}; //CASTING TODO: ensure that Type.type=="INT" and Exp.type=="SET"; Construct Exp with type="INT"
+                    | IF LPAREN Exp RPAREN Statement{
+                        if ($3.type == "BOOL"){
+                            Framework.addScope(Framework.scopeType.IF);
+                        }
+                        else{
+                             return error; // TODO: add the correct error code
+                        }
+
+                    }
+                    | IF LPAREN Exp RPAREN Statement ELSE Statement {
+                        if ($3.type == "BOOL"){
+                            Framework.addScope(Framework.scopeType.IF);
+                            Framework.addScope(Framework.scopeType.IF);
+                        }
+                        else{
+                             return error; // TODO: add the correct error code
+                        }
+
+                    }
+                    | WHILE LPAREN Exp RPAREN Statement{
+                    if ($3.type == "BOOL"){
+                        Framework.addScope(Framework.scopeType.LOOP);
+                    }
+                    else{
+                        return error; // TODO: add the correct error code
+                    }
+
+                    }
+                    | BREAK SC{
+                        if(Framework.scopes.getTopScope().getType() != "LOOP"){
+                             return errorUnexpectedBreak(lineno);
+                    }
+                     }  //TODO: need the functions in Framework: getTopScopes(), GetType()
+                    | CONTINUE SC{
+                        if(Framework.scopes.getTopScope().getType() != "LOOP"){
+                            return errorUnexpectedBreak(lineno);}
+                    }
+Call:			ID LPAREN ExpList RPAREN {
+                        if(!Framework.contains($1.name)){
+                            return errorUnderFunc(lineno,$1.name)
+                        }
+                        string type = Framework.symbol_table[$1.name].type; // check the syntax. need Framework.symbol_table[$1.name] to be a "Function" struct
+                        if(!Framework.symbol_table[$1.name].getList() == $3.getList()){
+                            return errorPrototypeMismatch(lineno,$1.name,Framework.symbol_table[$1.name].getList());
+                        }
+                        $$ = new Call ($1.name, type)
+                        }
+                    | ID LPAREN RPAREN {
+                    if(!Framework.contains($1.name)){
+                       return errorUnderFunc(lineno,$1.name)
+                       }
+                       string type = Framework.symbol_table[$1.name].type;
+                       $$ = new Call ($1.name, type)
+                    }; //
+ExpList:		Exp {   $$ = new ExpList(); // making the one size list by adding the EXP type into the list
+                        $$.addTypeToListArrguments($1.type);} //
+                    | Exp COMMA ExpList { $$.addTypeToListArrguments($1.type)}; // adding into the list
+Type:			INT {$$ = new Type("INT");}
+                    | BYTE{$$ = new Type("BYTE");}
+                    | BOOL {$$ = new Type("BOOL");}
+                    | SET LBRACKET NUM DOTS NUM RBRACKET {$$ = new Type("SET");};
+Exp:			LPAREN Exp RPAREN {$$ = new Exp($2.type);} //
+                    | Exp BINOP_ADDITIVE Exp {
+                        string res_type = typeBinopAddChecking($1,$2);
+                        $$ = new Exp(res_type);
+                        } //
+                    | Exp BINOP_MULTIPLICATIVE Exp {
+                        string res_type = typeBinopMultiplicativeChecking($1,$2);
+                        $$ = new Exp(res_type);
+                    }
+                    | ID {$$ = new Exp(Framework.symbol_table[$1.name].type);} //
+                    | Call {$$ = new Exp($1.type);}
+                    | NUM {$$ = new Exp("INT")";}
+                    | NUM B {$$ = new Exp("BYTE");}
+                    | STRING {$$ = new Exp("STRING");}
+                    | TRUE {$$ = new Exp("BOOL");}
+                    | FALSE {$$ = new Exp("BOOL");}
+                    | NOT Exp {
+                        if($2.type != "BOOL"){
+                            return error; // TODO: check the right error
+                        }
+                        else{
+                            $$ = new Exp("BOOL");
+                        }
+                    }
+                    | Exp AND Exp {
+                        if($1.type != "BOOL" || $3.type != "BOLL"){
+                           return error; // TODO: check the right error
+                       }
+                       else{
+                           $$ = new Exp("BOOL");
+                       }
+                    }
+                    | Exp OR Exp{
+                        if($1.type != "BOOL" || $3.type != "BOLL"){
+                           return error; // TODO: check the correct error
+                       }
+                       else{
+                           $$ = new Exp("BOOL");
+                       }
+                    }
+                    | Exp RELOP_RELATIONAL Exp {
+                        if(($1.type != "INT" && $1.type != "BYTE") || ($2.type != "INT" && $2.type != "BYTE")){
+                            return error; // TODO: check the correct error
+                        }
+                        else{
+                            $$ = new Exp ("BOOL");
+                        }
+                    }
+                    | Exp RELOP_EQUALITY Exp {
+                        if(($1.type != "INT" && $1.type != "BYTE") || ($2.type != "INT" && $2.type != "BYTE")){
+                          return error; // TODO: check the correct error
+                      }
+                      else{
+                          $$ = new Exp ("BOOL");
+                      }
+                    }
+                    | LPAREN Type RPAREN Exp {
+                        if($2.type != "INT" || $4.type !="SET"){
+                            return error; // TODO: check the correct error
+                        }
+                        else{
+                            $$ = new Exp("INT");
+                        }
+
+                    };
 
 %%
 void yyerror(const char*){
