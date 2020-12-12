@@ -16,12 +16,15 @@
 
 class Scope{
 private:
-    std::deque<Variable> identifiers;
+    std::deque<Variable> variables;
     int nextOffset;
 public:
-    enum ScopeType{IF, LOOP, FUNCTION} scopeType;
+    int getNextOffset() const;
 
-    void insert(const Variable& newVar);
+public:
+    enum ScopeType{IF, LOOP, FUNCTION, BLOCK} scopeType;
+
+    Variable& insert(const Variable& newVar, unordered_map<string, Symbol*>& symbol_table);
 
     virtual ~Scope();
 
@@ -29,18 +32,21 @@ public:
 };
 
 
-
+//singleton
 class Framework {
 private:
-    static std::stack<Scope> scopes;
-    static std::stack<int> offsets;
-    std::unordered_map<string, Symbol> symbol_table;
+    std::stack<Scope> scopes;
+    std::deque<Function> functions;
+    std::unordered_map<string, Symbol*> symbol_table;
 
-    static bool contains(const string& name);
+    bool contains(const string& name);
+    Framework();
+
 public:
-    static void insertVariableIntoTopScope(const Variable &newVar);
-    static void addScope(enum Scope::ScopeType scopeType);
-    static bool addFunction(const Function &newFunc);
+    static Framework getInstance();
+    void insertVariableIntoTopScope(const Variable &newVar);
+    void addScope(enum Scope::ScopeType scopeType);
+    void addFunction(const Function &newFunc);
     Symbol& operator[](const string& name); //for accessing the symbol_table
 };
 
