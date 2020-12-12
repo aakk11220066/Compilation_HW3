@@ -15,13 +15,20 @@
 #include "Exceptions.h"
 
 class Scope{
-private:
-    std::deque<Variable> identifiers;
-    int nextOffset;
 public:
-    enum ScopeType{IF, LOOP, FUNCTION} scopeType;
+    enum ScopeType{IF, LOOP, FUNCTION, BLOCK};
 
-    void insert(const Variable& newVar);
+private:
+    std::deque<Variable> variables;
+    int nextOffset;
+    enum ScopeType scopeType;
+
+public:
+    int getNextOffset() const;
+
+    ScopeType getScopeType() const;
+
+    Variable& insert(const Variable& newVar, unordered_map<string, Symbol*>& symbol_table);
 
     virtual ~Scope();
 
@@ -32,16 +39,19 @@ public:
 
 class Framework {
 private:
-    static std::stack<Scope> scopes;
-    static std::stack<int> offsets;
-    std::unordered_map<string, Symbol> symbol_table;
+    std::stack<Scope> scopes;
+    std::unordered_map<string, Symbol*> symbol_table;
+    std::deque<Function> functions;
 
-    static bool contains(const string& name);
+    Framework();
+    bool contains(const string& name);
 public:
-    static void insertVariableIntoTopScope(const Variable &newVar);
-    static void addScope(enum Scope::ScopeType scopeType);
-    static bool addFunction(const Function &newFunc);
+    Framework& getInstance();
+    void insertVariableIntoTopScope(const Variable &newVar);
+    void addScope(enum Scope::ScopeType scopeType);
+    void addFunction(const Function &newFunc);
     Symbol& operator[](const string& name); //for accessing the symbol_table
+    Scope& getTopScope();
 };
 
 

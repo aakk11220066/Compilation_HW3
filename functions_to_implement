@@ -1,0 +1,6 @@
+	functions we need:
+		1)Framework.symbol_table[$1.name].getParameters() // if this is function - returns list<string>. - DONE
+		2) to implement "==" between two string list. - DONE (builtin function of std::list; Akiva verified against documentation that this performs *deep* equality check)
+		2)getTopScope() // return scope - DONE
+		3)getScopeType() // return enum - DONE
+		

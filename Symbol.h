@@ -3,31 +3,35 @@
 
 #include <string>
 #include <unordered_map>
+#include <list>
 #include "hw3_output.hpp"
 using std::string;
 
+//ABSTRACT CLASS
 class Symbol{
 public:
     const string name, type;
     const int offset = 0;
-    std::unordered_map<string, Symbol*>* symbol_table; //only stored for the destructor
     virtual ~Symbol();
+protected:
+    std::unordered_map<string, Symbol*>* symbol_table; //only stored for the destructor
     Symbol(const string &name, const string &type);
     Symbol(const string &name, const string &type, unordered_map<string, Symbol*>& symbol_table);
     Symbol(const string &name, const string &type, int offset, unordered_map<string, Symbol*>& symbol_table);
-
 };
 
 class Function : public Symbol{
+    std::list<string> param_types;
 public:
-    Function(const string &name, const string &type);
-    Function(const string &name, const string &type, unordered_map<string, Symbol*>& symbol_table);
+    Function(const string &name, const string &type, std::list<string>& param_types); //For Shlomi's use
+    Function(const string &name, const string &type, unordered_map<string, Symbol *> &symbol_table, const list<string> &param_types); //For Akiva's use
+    const std::list<string>& getParameters() const;
 };
 
 class Variable : public Symbol{
 public:
-    Variable(const string &name, const string &type);
-    Variable(const string &name, const string &type, int offset, unordered_map<string, Symbol*>& symbol_table);
+    Variable(const string &name, const string &type); //For Shlomi's use
+    Variable(const string &name, const string &type, int offset, unordered_map<string, Symbol*>& symbol_table); //For Akiva's use
 };
 
 
