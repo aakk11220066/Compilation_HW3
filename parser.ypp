@@ -61,7 +61,7 @@
         Exp(cont string& type) : type(type);
     };
 
-    public static string typeBinopChecking(Exp e1, Exp e2){
+    static string typeBinopChecking(Exp e1, Exp e2){
         if (e1.type == "INT" || e2.type == "INT"){
             return "INT";
         }
@@ -74,7 +74,7 @@
         return "SET";
     }
 
-    public static string typeBinopMultiplicativeChecking(Exp e1, Exp e2){
+    static string typeBinopMultiplicativeChecking(Exp e1, Exp e2){
             if(e1.type == "SET" || e2.type == "SET"){
                 return error;// TODO: check the error type
             }
@@ -156,12 +156,12 @@ Statement:		LBRACE Statements RBRACE {Framework.addScope(Framework.scopeType.BLO
 
                     }
                     | BREAK SC{
-                        if(Framework.scopes.getTopScope().getType() != "LOOP"){
+                        if(Framework.scopes.getTopScope().getType() != scopeType.LOOP){
                              return errorUnexpectedBreak(lineno);
                     }
                      }  //TODO: need the functions in Framework: getTopScopes(), GetType()
                     | CONTINUE SC{
-                        if(Framework.scopes.getTopScope().getType() != "LOOP"){
+                        if(Framework.scopes.getTopScope().getType() != scopeType.LOOP){
                             return errorUnexpectedBreak(lineno);}
                     }
 Call:			ID LPAREN ExpList RPAREN {
@@ -213,7 +213,7 @@ Exp:			LPAREN Exp RPAREN {$$ = new Exp($2.type);} //
                         }
                     }
                     | Exp AND Exp {
-                        if($1.type != "BOOL" || $3.type != "BOLL"){
+                        if($1.type != "BOOL" || $3.type != "BOOL"){
                            return error; // TODO: check the right error
                        }
                        else{
@@ -221,7 +221,7 @@ Exp:			LPAREN Exp RPAREN {$$ = new Exp($2.type);} //
                        }
                     }
                     | Exp OR Exp{
-                        if($1.type != "BOOL" || $3.type != "BOLL"){
+                        if($1.type != "BOOL" || $3.type != "BOOL"){
                            return error; // TODO: check the correct error
                        }
                        else{
