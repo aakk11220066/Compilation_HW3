@@ -230,7 +230,7 @@ Exp:			LPAREN Exp RPAREN {$$ = new Exp($2.type);} //
                     }
                     | Exp RELOP_RELATIONAL Exp {
                         if(($1.type != "INT" && $1.type != "BYTE") || ($2.type != "INT" && $2.type != "BYTE")){
-                            return error; // TODO: check the correct error
+                            return error; // TODO: check the correct error.
                         }
                         else{
                             $$ = new Exp ("BOOL");
