@@ -113,6 +113,19 @@
     void yyerror(const char*);
 %}
 
+%right ASSIGN
+%left OR
+%left AND
+%left RELOP_EQUALITY
+%nonassoc RELOP_RELATIONAL
+%left BINOP_ADDITIVE
+%left BINOP_MULTIPLICATIVE
+%right NOT
+%left SC RPAREN RBRACE RBRACKET
+%right LBRACE LPAREN LBRACKET
+
+%right COMMA WHILE ELSE IF
+%nonassoc TRUE FALSE RETURN BREAK CONTINUE DOTS ID NUM STRING SET INT BYTE B BOOL VOID
 
 %%
 
@@ -122,9 +135,8 @@
 //DONE: print, printi
 //TODO: complete Framework class
 //TODO: Recursion problem - undefined at call time
-//TODO: ask Piazza about if/else/while scope
 //TODO: enforce size limitations on set and byte (255)
-//TODO: enforce existence of void main() function
+//DONE: enforce existence of void main() function
 
 
 Program:		Funcs {};
@@ -141,7 +153,7 @@ FormalsList:	FormalDecl {$$ = FormalsList($1.name, $1.type);} // changed: adding
                     | FormalDecl COMMA FormalsList{$$.addParamToFunc($1.name,$1.type);} ; //DONE: extract name, type from FormalDecl and append to list of names, types extracted from FormalsList
 FormalDecl:		Type ID{FormalDecl($1.type, $2.name);} ;
 Statements:		Statement {$$ = Statements($1.type)} //Done
-                    | Statements Statement{} ; /nothing
+                    | Statements Statement{} ; //nothing
 Statement:		LBRACE Statements RBRACE {Framework::getInstance().addScope(Framework::getInstance().scopeType.BLOCK);} // Done
                     | Type ID SC {insertVariableIntoTopScope(Variable($2,$1.type));} // Done
                     | Type ID ASSIGN Exp SC {insertVariableIntoTopScope(Variable($2,$1.type));} // Done
@@ -223,7 +235,7 @@ Exp:			LPAREN Exp RPAREN {$$ = new Exp($2.type);} //
                     }
                     | ID {$$ = new Exp(Framework::getInstance().symbol_table[$1.name].type);} //
                     | Call {$$ = new Exp($1.type);}
-                    | NUM {$$ = new Exp("INT")";}
+                    | NUM {$$ = new Exp("INT");}
                     | NUM B {$$ = new Exp("BYTE");}
                     | STRING {$$ = new Exp("STRING");}
                     | TRUE {$$ = new Exp("BOOL");}
@@ -286,7 +298,7 @@ void yyerror(const char*){
 int main(){
     try{
     	yyparse();
-	    if (!Framework::getInstance().mainExists) throw Exceptions::noMainException();
+	    if (!Framework::getInstance().mainExists) throw Exceptions::NoMainException();
     }
     catch (Exceptions::HW3_Exception& e){
         e.printError();
