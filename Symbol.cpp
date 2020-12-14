@@ -16,11 +16,11 @@ Variable::Variable(const string &name, const string &type) : Symbol(name, type) 
 
 Variable::Variable(const string &name, const string &type, int offset, unordered_map<string, Symbol*>& symbol_table) : Symbol(name, type, offset, symbol_table) {}
 
-Function::Function(const string &name, const string &type, std::list<string>& param_types) : Symbol(name, type), param_types(param_types) {}
+Function::Function(const string &name, const string &type, std::list<Variable>& params) : Symbol(name, type), params(params) {}
 
-Function::Function(const string &name, const string &type, unordered_map<string, Symbol *> &symbol_table, const std::list<string> &param_types)
-    : Symbol(name, type, symbol_table), param_types(param_types) {}
+Function::Function(const string &name, const string &type, unordered_map<string, Symbol *> &symbol_table, const std::list<Variable> &params)
+    : Symbol(name, type, symbol_table), params(params) {}
 
-const std::list<string> &Function::getParameters() const {
-    return param_types;
+const std::list<Variable> &Function::getParameters() const {
+    return params;
 }

@@ -172,26 +172,27 @@ Statement:		LBRACE Statements RBRACE {Framework::getInstance().addScope(Framewor
                     }
                     | BREAK SC{
                         if(Framework::getInstance().scopes.getTopScope().getType() != scopeType.LOOP){
-                             return errorUnexpectedBreak(lineno);
+                             throw errorUnexpectedBreak(lineno);
                     }
                      }
                     | CONTINUE SC{
                         if(Framework::getInstance().scopes.getTopScope().getScopeType() != scopeType.LOOP){
-                            return errorUnexpectedBreak(lineno);}
+                            throw unexpectedBreakException(lineno);
+                        }
                     }
 Call:			ID LPAREN ExpList RPAREN {
                         if(!Framework::getInstance().contains($1.name)){
-                            return errorUnderFunc(lineno,$1.name)
+                            throw underFuncException(lineno,$1.name)
                         }
                         string type = Framework::getInstance().symbol_table[$1.name].type; // check the syntax. need Framework::getInstance().symbol_table[$1.name] to be a "Function" struct
                         if(!Framework::getInstance().symbol_table[$1.name].getList() == $3.getList()){
-                            return errorPrototypeMismatch(lineno,$1.name,Framework::getInstance().symbol_table[$1.name].getParameters());
+                            throw prototypeMismatchException(lineno,$1.name,Framework::getInstance().symbol_table[$1.name].getParameters());
                         }
                         $$ = new Call ($1.name, type)
                         }
                     | ID LPAREN RPAREN {
                     if(!Framework::getInstance().contains($1.name)){
-                       return errorUnderFunc(lineno,$1.name)
+                       throw underFuncException(lineno,$1.name)
                        }
                        string type = Framework::getInstance().symbol_table[$1.name].type;
                        $$ = new Call ($1.name, type)

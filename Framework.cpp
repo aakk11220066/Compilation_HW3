@@ -4,7 +4,7 @@
 
 //NOTE: must modify default offset of Variable to correct offset!
 Variable& Scope::insert(const Variable &newVar, unordered_map<string, Symbol*>& symbol_table) {
-    Variable addedVar = Variable(newVar.name, newVar.type, nextOffset++, symbol_table);
+    Variable addedVar = Variable(newVar.name, newVar.type, newVar.offset + (nextOffset++), symbol_table);
     variables.push_back(addedVar);
     return variables.back();
 }
@@ -33,11 +33,17 @@ void Framework::insertVariableIntoTopScope(const Variable &newVar) {
 void Framework::addFunction(const Function &newFunc) {
     if (contains(newFunc.name)) throw Exceptions::AlreadyExistsException(0, newFunc.name); //FIXME: 0 is only a placeholder number, should be lineno
     assert(newFunc.offset == 0);
-    if (newFunc.name == "main" && newFunc.type == "INT" && newFunc.getParameters() == list<string>()) mainExists = true;
+    if (newFunc.name == "main" && newFunc.type == "INT" && newFunc.getParameters() == list<Variable>()) mainExists = true;
     Function funcToAdd = Function(newFunc.name, newFunc.type, symbol_table, newFunc.getParameters());
     functions.push_back(funcToAdd);
     Function& addedFunc = functions.back();
     symbol_table.insert({newFunc.name, &addedFunc});
+
+    int numParamsAddedSoFar = 0;
+    for (Variable param : newFunc.getParameters()){
+        param.offset = -(++numParamsAddedSoFar);
+        insertVariableIntoTopScope(param); //TODO: param should be inserted into function scope, not surrounding scope.  And param offset should be negative
+    }
 }
 
 

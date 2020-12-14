@@ -20,18 +20,18 @@ protected:
     Symbol(const string &name, const string &type, int offset, unordered_map<string, Symbol*>& symbol_table);
 };
 
-class Function : public Symbol{
-    std::list<string> param_types;
-public:
-    Function(const string &name, const string &type, std::list<string>& param_types); //For Shlomi's use
-    Function(const string &name, const string &type, unordered_map<string, Symbol *> &symbol_table, const list<string> &param_types); //For Akiva's use
-    const std::list<string>& getParameters() const;
-};
-
 class Variable : public Symbol{
 public:
     Variable(const string &name, const string &type); //For Shlomi's use
     Variable(const string &name, const string &type, int offset, unordered_map<string, Symbol*>& symbol_table); //For Akiva's use
+};
+
+class Function : public Symbol{
+    std::list<Variable> params;
+public:
+    Function(const string &name, const string &type, std::list<Variable>& params); //For Shlomi's use
+    Function(const string &name, const string &type, unordered_map<string, Symbol *> &symbol_table, const list<Variable>& params); //For Akiva's use
+    const std::list<Variable>& getParameters() const;
 };
 
 
