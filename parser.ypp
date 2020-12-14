@@ -3,8 +3,9 @@
 	#include <string>
 	#include <stack>
 	using namespace std;
-	#include "Framework::getInstance().h"
+	#include "Framework.h"
 	#include "Symbol.h"
+	#include "Exceptions.h"
 
 	class NonTerminal{
 	public:
@@ -261,6 +262,6 @@ void yyerror(const char*){
 
 int main(){
 	 yyparse();
-	
+	if (!Framework::getInstance().mainExists) throw Exceptions::noMainException();
 
 }

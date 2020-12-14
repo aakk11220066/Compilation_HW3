@@ -47,6 +47,8 @@ private:
     Framework();
     bool contains(const string& name);
 public:
+    bool mainExists = false;
+
     static Framework& getInstance();
     void insertVariableIntoTopScope(const Variable &newVar);
     void addScope(enum Scope::ScopeType scopeType);

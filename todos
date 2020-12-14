@@ -1,6 +1,6 @@
 todo - parser:
 1. recursion solution - entering the function into the symbol_table before - both,think
-2. void main()- akiva
+2. void main()- akiva - DONE
 3. errors - akiva
 4. type-safety: in - shlomi
 5. print,printi  akiva - DONE
