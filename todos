@@ -9,3 +9,6 @@ todo - parser:
 Framwork: done for now
 
 Piazza - both.
+Piazza questions:
+    1. What is the scope of a loop?
+    2. How to add data (function declaration, function parameters) to symbol table before function implementation is complete, given that Bison is a bottom-up parser?

@@ -42,7 +42,7 @@ void Framework::addFunction(const Function &newFunc) {
     int numParamsAddedSoFar = 0;
     for (Variable param : newFunc.getParameters()){
         param.offset = -(++numParamsAddedSoFar);
-        insertVariableIntoTopScope(param); //TODO: param should be inserted into function scope, not surrounding scope.  And param offset should be negative
+        insertVariableIntoTopScope(param); //TODO: param should be inserted into function scope, not surrounding scope
     }
 }
 

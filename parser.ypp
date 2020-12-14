@@ -2,7 +2,7 @@
 	#include <iostream>
 	#include <string>
 	#include <stack>
-	#include <List>
+	#include <list>
 	using namespace std;
 	#include "Framework.h"
 	#include "Symbol.h"
@@ -82,21 +82,28 @@
             return "BYTE";
         }
         if(e1.type == "SET" && e2.type == "SET"){
-            return error;// TODO: check the error type
+            throw Exceptions::MismatchException(lineno);
         }
         return "SET";
     }
 
-    static string typeBinopMultiplicativeChecking(Exp e1, Exp e2){
-            if(e1.type == "SET" || e2.type == "SET"){
-                return error;// TODO: check the error type
-            }
-            if (e1.type == "INT" || e2.type == "INT"){
-                return "INT";
-            }
-            return "BYTE";
+    string typeBinopMultiplicativeChecking(Exp e1, Exp e2){
+        if(e1.type == "SET" || e2.type == "SET"){
+            throw Exceptions::MismatchException(lineno);
         }
+        if (e1.type == "INT" || e2.type == "INT"){
+            return "INT";
+        }
+        return "BYTE";
+    }
 
+    list<string> varsListToTypesList(const list<Variable>& varList){
+        list<string> result = list<string>();
+        for (const Variable& var : varList){
+            result.push_back(var.type);
+        }
+        return result;
+    }
 
     //TODO: static function for the return issue
     extern int yylineno;
@@ -111,8 +118,8 @@
 
 
 //TODO: ensure type safety on everything (a value can become it's own type.  A byte can become an int.) ("in" relop is used byte/int in set)
-//TODO: errors
-//TODO: print, printi
+//DONE: errors
+//DONE: print, printi
 //TODO: complete Framework class
 //TODO: Recursion problem - undefined at call time
 //TODO: ask Piazza about if/else/while scope
@@ -147,7 +154,7 @@ Statement:		LBRACE Statements RBRACE {Framework::getInstance().addScope(Framewor
                             Framework::getInstance().addScope(Framework::getInstance().scopeType.IF);
                         }
                         else{
-                             return error; // TODO: add the correct error code
+                             throw Exceptions::MismatchException(lineno);
                         }
 
                     }
@@ -157,7 +164,7 @@ Statement:		LBRACE Statements RBRACE {Framework::getInstance().addScope(Framewor
                             Framework::getInstance().addScope(Framework::getInstance().scopeType.IF);
                         }
                         else{
-                             return error; // TODO: add the correct error code
+                             throw Exceptions::MismatchException(lineno);
                         }
 
                     }
@@ -166,33 +173,34 @@ Statement:		LBRACE Statements RBRACE {Framework::getInstance().addScope(Framewor
                         Framework::getInstance().addScope(Framework::getInstance().scopeType.LOOP);
                     }
                     else{
-                        return error; // TODO: add the correct error code
+                        throw Exceptions::MismatchException(lineno);
                     }
 
                     }
                     | BREAK SC{
                         if(Framework::getInstance().scopes.getTopScope().getType() != scopeType.LOOP){
-                             throw errorUnexpectedBreak(lineno);
+                             throw Exceptions::UnexpectedBreakException(lineno);
                     }
                      }
                     | CONTINUE SC{
                         if(Framework::getInstance().scopes.getTopScope().getScopeType() != scopeType.LOOP){
-                            throw unexpectedBreakException(lineno);
+                            throw Exceptions::UnexpectedContinueException(lineno);
                         }
                     }
 Call:			ID LPAREN ExpList RPAREN {
                         if(!Framework::getInstance().contains($1.name)){
-                            throw underFuncException(lineno,$1.name)
+                            throw Exceptions::UndefFuncException(lineno,$1.name);
                         }
+                        //TODO: do not use symbol_table.operator[], instead use Framework.operator[].  And don't check if returned NULL, instead just catch IdentifierDoesNotExistException
                         string type = Framework::getInstance().symbol_table[$1.name].type; // check the syntax. need Framework::getInstance().symbol_table[$1.name] to be a "Function" struct
                         if(!Framework::getInstance().symbol_table[$1.name].getList() == $3.getList()){
-                            throw prototypeMismatchException(lineno,$1.name,Framework::getInstance().symbol_table[$1.name].getParameters());
+                            throw Exceptions::PrototypeMismatchException(lineno,$1.name,Framework::getInstance().symbol_table[$1.name].getParameters());
                         }
                         $$ = new Call ($1.name, type)
                         }
                     | ID LPAREN RPAREN {
                     if(!Framework::getInstance().contains($1.name)){
-                       throw underFuncException(lineno,$1.name)
+                       throw Exceptions::UndefFuncException(lineno,$1.name)
                        }
                        string type = Framework::getInstance().symbol_table[$1.name].type;
                        $$ = new Call ($1.name, type)
@@ -222,7 +230,7 @@ Exp:			LPAREN Exp RPAREN {$$ = new Exp($2.type);} //
                     | FALSE {$$ = new Exp("BOOL");}
                     | NOT Exp {
                         if($2.type != "BOOL"){
-                            return error; // TODO: check the right error
+                            throw Exceptions::MismatchException(lineno);
                         }
                         else{
                             $$ = new Exp("BOOL");
@@ -230,7 +238,7 @@ Exp:			LPAREN Exp RPAREN {$$ = new Exp($2.type);} //
                     }
                     | Exp AND Exp {
                         if($1.type != "BOOL" || $3.type != "BOOL"){
-                           return error; // TODO: check the right error
+                           throw Exceptions::MismatchException(lineno);
                        }
                        else{
                            $$ = new Exp("BOOL");
@@ -238,7 +246,7 @@ Exp:			LPAREN Exp RPAREN {$$ = new Exp($2.type);} //
                     }
                     | Exp OR Exp{
                         if($1.type != "BOOL" || $3.type != "BOOL"){
-                           return error; // TODO: check the correct error
+                           throw Exceptions::MismatchException(lineno);
                        }
                        else{
                            $$ = new Exp("BOOL");
@@ -246,7 +254,7 @@ Exp:			LPAREN Exp RPAREN {$$ = new Exp($2.type);} //
                     }
                     | Exp RELOP_RELATIONAL Exp {
                         if(($1.type != "INT" && $1.type != "BYTE") || ($2.type != "INT" && $2.type != "BYTE")){
-                            return error; // TODO: check the correct error.
+                            throw Exceptions::MismatchException(lineno);.
                         }
                         else{
                             $$ = new Exp ("BOOL");
@@ -254,7 +262,7 @@ Exp:			LPAREN Exp RPAREN {$$ = new Exp($2.type);} //
                     }
                     | Exp RELOP_EQUALITY Exp {
                         if(($1.type != "INT" && $1.type != "BYTE") || ($2.type != "INT" && $2.type != "BYTE")){
-                          return error; // TODO: check the correct error
+                          throw Exceptions::MismatchException(lineno);
                       }
                       else{
                           $$ = new Exp ("BOOL");
@@ -262,7 +270,7 @@ Exp:			LPAREN Exp RPAREN {$$ = new Exp($2.type);} //
                     }
                     | LPAREN Type RPAREN Exp {
                         if($2.type != "INT" || $4.type !="SET"){
-                            return error; // TODO: check the correct error
+                            throw Exceptions::MismatchException(lineno);
                         }
                         else{
                             $$ = new Exp("INT");
@@ -276,7 +284,11 @@ void yyerror(const char*){
 }
 
 int main(){
-	 yyparse();
-	if (!Framework::getInstance().mainExists) throw Exceptions::noMainException();
-
+    try{
+    	yyparse();
+	    if (!Framework::getInstance().mainExists) throw Exceptions::noMainException();
+    }
+    catch (Exceptions::HW3_Exception& e){
+        e.printError();
+    }
 }
