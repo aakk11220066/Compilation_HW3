@@ -3,7 +3,7 @@
 	#include <string>
 	#include <stack>
 	using namespace std;
-	#include "Framework.h"
+	#include "Framework::getInstance().h"
 	#include "Symbol.h"
 
 	class NonTerminal{
@@ -120,7 +120,7 @@ FormalsList:	FormalDecl {$$ = FormalsList($1.name, $1.type);} // DONE: extract n
 FormalDecl:		Type ID{FormalDecl($1.type, $2.name);} ;
 Statements:		Statement {$$ = Statements($1.type)} //Done
                     | Statements Statement{} ; /nothing
-Statement:		LBRACE Statements RBRACE {Framework.addScope(Framework.scopeType.BLOCK);} // Done
+Statement:		LBRACE Statements RBRACE {Framework::getInstance().addScope(Framework::getInstance().scopeType.BLOCK);} // Done
                     | Type ID SC {insertVariableIntoTopScope(Variable($2,$1.type));} // Done
                     | Type ID ASSIGN Exp SC {insertVariableIntoTopScope(Variable($2,$1.type));} // Done
                     | ID ASSIGN Exp SC {} //nothing
@@ -129,7 +129,7 @@ Statement:		LBRACE Statements RBRACE {Framework.addScope(Framework.scopeType.BLO
                     | RETURN Exp SC {$$ = Statement($2.type)} // Done
                     | IF LPAREN Exp RPAREN Statement{
                         if ($3.type == "BOOL"){
-                            Framework.addScope(Framework.scopeType.IF);
+                            Framework::getInstance().addScope(Framework::getInstance().scopeType.IF);
                         }
                         else{
                              return error; // TODO: add the correct error code
@@ -138,8 +138,8 @@ Statement:		LBRACE Statements RBRACE {Framework.addScope(Framework.scopeType.BLO
                     }
                     | IF LPAREN Exp RPAREN Statement ELSE Statement {
                         if ($3.type == "BOOL"){
-                            Framework.addScope(Framework.scopeType.IF);
-                            Framework.addScope(Framework.scopeType.IF);
+                            Framework::getInstance().addScope(Framework::getInstance().scopeType.IF);
+                            Framework::getInstance().addScope(Framework::getInstance().scopeType.IF);
                         }
                         else{
                              return error; // TODO: add the correct error code
@@ -148,7 +148,7 @@ Statement:		LBRACE Statements RBRACE {Framework.addScope(Framework.scopeType.BLO
                     }
                     | WHILE LPAREN Exp RPAREN Statement{
                     if ($3.type == "BOOL"){
-                        Framework.addScope(Framework.scopeType.LOOP);
+                        Framework::getInstance().addScope(Framework::getInstance().scopeType.LOOP);
                     }
                     else{
                         return error; // TODO: add the correct error code
@@ -156,29 +156,29 @@ Statement:		LBRACE Statements RBRACE {Framework.addScope(Framework.scopeType.BLO
 
                     }
                     | BREAK SC{
-                        if(Framework.scopes.getTopScope().getType() != scopeType.LOOP){
+                        if(Framework::getInstance().scopes.getTopScope().getType() != scopeType.LOOP){
                              return errorUnexpectedBreak(lineno);
                     }
                      }  //TODO: need the functions in Framework: getTopScopes(), GetScopeType()
                     | CONTINUE SC{
-                        if(Framework.scopes.getTopScope().getScopeType() != scopeType.LOOP){
+                        if(Framework::getInstance().scopes.getTopScope().getScopeType() != scopeType.LOOP){
                             return errorUnexpectedBreak(lineno);}
                     }
 Call:			ID LPAREN ExpList RPAREN {
-                        if(!Framework.contains($1.name)){
+                        if(!Framework::getInstance().contains($1.name)){
                             return errorUnderFunc(lineno,$1.name)
                         }
-                        string type = Framework.symbol_table[$1.name].type; // check the syntax. need Framework.symbol_table[$1.name] to be a "Function" struct
-                        if(!Framework.symbol_table[$1.name].getList() == $3.getList()){
-                            return errorPrototypeMismatch(lineno,$1.name,Framework.symbol_table[$1.name].getParameters());
+                        string type = Framework::getInstance().symbol_table[$1.name].type; // check the syntax. need Framework::getInstance().symbol_table[$1.name] to be a "Function" struct
+                        if(!Framework::getInstance().symbol_table[$1.name].getList() == $3.getList()){
+                            return errorPrototypeMismatch(lineno,$1.name,Framework::getInstance().symbol_table[$1.name].getParameters());
                         }
                         $$ = new Call ($1.name, type)
                         }
                     | ID LPAREN RPAREN {
-                    if(!Framework.contains($1.name)){
+                    if(!Framework::getInstance().contains($1.name)){
                        return errorUnderFunc(lineno,$1.name)
                        }
-                       string type = Framework.symbol_table[$1.name].type;
+                       string type = Framework::getInstance().symbol_table[$1.name].type;
                        $$ = new Call ($1.name, type)
                     }; //
 ExpList:		Exp {   $$ = new ExpList(); // making the one size list by adding the EXP type into the list
@@ -197,7 +197,7 @@ Exp:			LPAREN Exp RPAREN {$$ = new Exp($2.type);} //
                         string res_type = typeBinopMultiplicativeChecking($1,$2);
                         $$ = new Exp(res_type);
                     }
-                    | ID {$$ = new Exp(Framework.symbol_table[$1.name].type);} //
+                    | ID {$$ = new Exp(Framework::getInstance().symbol_table[$1.name].type);} //
                     | Call {$$ = new Exp($1.type);}
                     | NUM {$$ = new Exp("INT")";}
                     | NUM B {$$ = new Exp("BYTE");}

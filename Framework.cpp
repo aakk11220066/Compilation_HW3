@@ -67,6 +67,14 @@ Scope &Framework::getTopScope() {
 
 Framework::Framework() {
     scopes.push(Scope(Scope::BLOCK, 0));
+
+    list<string> printFuncParams = list<string>();
+    printFuncParams.emplace_back("STRING");
+    addFunction(Function("print",  "VOID", printFuncParams));
+
+    list<string> printiFuncParams = list<string>();
+    printFuncParams.emplace_back("INT");
+    addFunction(Function("printi",  "VOID", printiFuncParams));
 }
 
 Framework& Framework::getInstance() {
