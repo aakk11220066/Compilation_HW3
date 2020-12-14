@@ -19,5 +19,7 @@ namespace Exceptions {
         const int lineno;
         IdentifierDoesNotExistException(int lineno, const string& name) : name(name), lineno(lineno) {}
     };
+
+    class noMainException : HW3_Exception {};
 }
 #endif //HW3_EXCEPTIONS_H

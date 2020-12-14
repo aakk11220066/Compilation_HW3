@@ -33,6 +33,7 @@ void Framework::insertVariableIntoTopScope(const Variable &newVar) {
 void Framework::addFunction(const Function &newFunc) {
     if (contains(newFunc.name)) throw Exceptions::AlreadyExistsException(0, newFunc.name); //FIXME: 0 is only a placeholder number, should be lineno
     assert(newFunc.offset == 0);
+    if (newFunc.name == "main" && newFunc.type == "INT" && newFunc.getParameters() == list<string>()) mainExists = true;
     Function funcToAdd = Function(newFunc.name, newFunc.type, symbol_table, newFunc.getParameters());
     functions.push_back(funcToAdd);
     Function& addedFunc = functions.back();
@@ -67,6 +68,14 @@ Scope &Framework::getTopScope() {
 
 Framework::Framework() {
     scopes.push(Scope(Scope::BLOCK, 0));
+
+    list<string> printFuncParams = list<string>();
+    printFuncParams.emplace_back("STRING");
+    addFunction(Function("print",  "VOID", printFuncParams));
+
+    list<string> printiFuncParams = list<string>();
+    printFuncParams.emplace_back("INT");
+    addFunction(Function("printi",  "VOID", printiFuncParams));
 }
 
 Framework& Framework::getInstance() {

@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <stack>
 #include <deque>
+#include <memory>
 
 #include "Symbol.h"
 #include "Exceptions.h"
@@ -46,7 +47,9 @@ private:
     Framework();
     bool contains(const string& name);
 public:
-    Framework& getInstance();
+    bool mainExists = false;
+
+    static Framework& getInstance();
     void insertVariableIntoTopScope(const Variable &newVar);
     void addScope(enum Scope::ScopeType scopeType);
     void addFunction(const Function &newFunc);
