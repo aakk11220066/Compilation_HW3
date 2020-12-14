@@ -2,6 +2,7 @@
 	#include <iostream>
 	#include <string>
 	#include <stack>
+	#include <List>
 	using namespace std;
 	#include "Framework.h"
 	#include "Symbol.h"
@@ -23,15 +24,26 @@
     class Funcs : public NonTerminal{};
     class FuncDecl : public NonTerminal{};
     class RetType : public NonTerminal{};
-    class Formals : public NonTerminal{};
-    class FormalsList : public NonTerminal{
-        FormalsList(const string& name, const string& type){
-            namesAndTypes.push(NonTerminal(name, type));
-        }
-        FormalsList(const string& name, const string& type, const stack& namesAndTypes){
+    class Formals : public NonTerminal{
+    public:
+        List<string> namesAndTypes;
+        Formals(List<string> namesAndTypes){
             this->namesAndTypes = namesAndTypes;
-            this->namesAndTypes.push(NonTerminal(name, type));
         }
+    };
+    class FormalsList : public NonTerminal{
+        public:
+            List<string> namesAndTypes;
+            FormalsList(const string& name, const string& type){
+                namesAndTypes.push_back(NonTerminal(name, type));
+            }
+            FormalsList(const string& name, const string& type){
+                this->namesAndTypes = namesAndTypes;
+                this->namesAndTypes.push(NonTerminal(name, type));
+            }
+            addParamToFunc(const string& name,const string& type){
+                this->namesAndTypes.push_back(NonTerminal(name, type));
+            }
     };
 	class FormalDecl : public NonTerminal{
 	    FormalDecl(const string& name, const string& type) : name(name), type(type){}
@@ -107,16 +119,18 @@
 //TODO: enforce existence of void main() function
 
 
-Program:		Funcs {output::printProductionRule(1);}; // TODO: add global scope to framework
+Program:		Funcs {};
 Funcs:			/*epsilon*/ {} //DONE: nothing
                     |FuncDecl Funcs {}; //DONE: nothing
-FuncDecl:		RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE{} ; // TODO: add Function to symbol table with name, type, list_of_params.  Also add parameters (=list of names, types) to symbol table + function scope
+FuncDecl:		RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE{
+                    Framework.getInstance().addFunction(Function($2.name,$1.type, $4.namesAndTypes));
+                } ; // TODO: add Function to symbol table with name, type, list_of_params.  Also add parameters (=list of names, types) to symbol table + function scope
 RetType:		Type {$$ = RetType($1.type);} // DONE: extract type from Type
                     | VOID {$$ = RetType($1.type);}; //DONE: RetType.type = "VOID"
 Formals:		/*epsilon*/ {} //DONE: nothing
                     | FormalsList {$$ = Formals($1.namesAndTypes);} ; // DONE: extract names, types from FormalsList
-FormalsList:	FormalDecl {$$ = FormalsList($1.name, $1.type);} // DONE: extract name, type from FormalDecl (create list of length 1)
-                    | FormalDecl COMMA FormalsList{$$ = FormalsList($1.name, $1.type, $3.namesAndTypes);} ; //DONE: extract name, type from FormalDecl and append to list of names, types extracted from FormalsList
+FormalsList:	FormalDecl {$$ = FormalsList($1.name, $1.type);} // changed: adding a list to formalsList struct
+                    | FormalDecl COMMA FormalsList{$$.addParamToFunc($1.name,$1.type);} ; //DONE: extract name, type from FormalDecl and append to list of names, types extracted from FormalsList
 FormalDecl:		Type ID{FormalDecl($1.type, $2.name);} ;
 Statements:		Statement {$$ = Statements($1.type)} //Done
                     | Statements Statement{} ; /nothing
@@ -159,7 +173,7 @@ Statement:		LBRACE Statements RBRACE {Framework.addScope(Framework.scopeType.BLO
                         if(Framework.scopes.getTopScope().getType() != scopeType.LOOP){
                              return errorUnexpectedBreak(lineno);
                     }
-                     }  //TODO: need the functions in Framework: getTopScopes(), GetScopeType()
+                     }
                     | CONTINUE SC{
                         if(Framework.scopes.getTopScope().getScopeType() != scopeType.LOOP){
                             return errorUnexpectedBreak(lineno);}
