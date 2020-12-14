@@ -129,7 +129,7 @@ FuncDecl:		RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE{
 RetType:		Type {$$ = RetType($1.type);} // DONE: extract type from Type
                     | VOID {$$ = RetType($1.type);}; //DONE: RetType.type = "VOID"
 Formals:		/*epsilon*/ {} //DONE: nothing
-                    | FormalsList {$$ = Formals($1.namesAndTypes);} ; // DONE: extract names, types from FormalsList
+                    | FormalsList {$$ = Formals($1.namesAndTypes);} ; // DONE: extract names, types from FormalsList.
 FormalsList:	FormalDecl {$$ = FormalsList($1.name, $1.type);} // changed: adding a list to formalsList struct
                     | FormalDecl COMMA FormalsList{$$.addParamToFunc($1.name,$1.type);} ; //DONE: extract name, type from FormalDecl and append to list of names, types extracted from FormalsList
 FormalDecl:		Type ID{FormalDecl($1.type, $2.name);} ;
