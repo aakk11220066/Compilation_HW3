@@ -29,38 +29,32 @@
     };
     class FormalsList : public NonTerminal{
         public:
-            list<string> namesAndTypes;
+            list<NonTerminal> namesAndTypes;
             FormalsList(const string& name, const string& type) : NonTerminal("", "") {
                 namesAndTypes.push_back(NonTerminal(name, type));
             }
-            /*FormalsList(const string& name, const string& type) : namesAndTypes(namesAndTypes) {
-                this->namesAndTypes = namesAndTypes;
-                this->namesAndTypes.push(NonTerminal(name, type));
-            }*/ //TODO: AKIVA: please review this.  I believe this section should be deleted
-            addParamToFunc(const string& name,const string& type){
+            void addParamToFunc(const string& name,const string& type){
                 this->namesAndTypes.push_back(NonTerminal(name, type));
             }
     };
 	class FormalDecl : public NonTerminal{
-	    FormalDecl(const string& name, const string& type) : name(name), type(type){}
+	    FormalDecl(const string& name, const string& type) : NonTerminal(name, type) {}
 	};
     class Statements : public NonTerminal{
-        Statements(const string& type): type(type){}
+        Statements(const string& type): NonTerminal("", type){}
     };
 	class Statement : public NonTerminal{
 	    public:
             bool is_break;
             bool is_continue;
-            Statement(const string& type): type(type), is_break(false), is_continue(false){}
-            Statement(const string& type, bool is_break, bool is_continue): type(type), is_break(is_break), is_continue(is_continue){}
+            Statement(const string& type): NonTerminal("", type), is_break(false), is_continue(false){}
+            Statement(const string& type, bool is_break, bool is_continue): NonTerminal("", type), is_break(is_break), is_continue(is_continue){}
 	};
 	class Call : public NonTerminal{};
 	class ExpList : public NonTerminal{
 	    public:
-	    List<string> arrguments_list;
-	    ExpList(){
-	        arrguments_list = new List<string>();
-	    }
+	    list<string> arrguments_list;
+	    ExpList() : NonTerminal("", ""), arrguments_list(list<string>()) {}
 	};
     class Type : public NonTerminal{
         Type(cont string& type) : type(type);
