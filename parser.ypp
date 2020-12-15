@@ -30,7 +30,7 @@
     class FormalsList : public NonTerminal{
         public:
             list<string> namesAndTypes;
-            FormalsList(const string& name, const string& type){ //FIXME: AKIVA: the constructor of a child class (FormalsList) must call constructor of parent class in its initialization list (NonTerminal)
+            FormalsList(const string& name, const string& type) : NonTerminal("", "") {
                 namesAndTypes.push_back(NonTerminal(name, type));
             }
             /*FormalsList(const string& name, const string& type) : namesAndTypes(namesAndTypes) {
