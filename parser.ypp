@@ -57,10 +57,10 @@
 	    ExpList() : NonTerminal("", ""), arrguments_list(list<string>()) {}
 	};
     class Type : public NonTerminal{
-        Type(const string& type) : type(type);
+        Type(const string& type) : NonTerminal("", type);
     };
     class Exp : public NonTerminal{
-        Exp(const string& type) : type(type);
+        Exp(const string& type) : NonTerminal("", type);
     };
 
     static string typeBinopChecking(Exp e1, Exp e2){
