@@ -24,7 +24,7 @@
     class RetType : public NonTerminal{};
     class Formals : public NonTerminal{
     public:
-        list<string> namesAndTypes;
+        list<Variable> namesAndTypes;
         Formals(list<string> namesAndTypes) : namesAndTypes(namesAndTypes) {}
     };
     class FormalsList : public NonTerminal{
