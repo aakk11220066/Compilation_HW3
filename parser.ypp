@@ -24,21 +24,19 @@
     class RetType : public NonTerminal{};
     class Formals : public NonTerminal{
     public:
-        List<string> namesAndTypes;
-        Formals(List<string> namesAndTypes){
-            this->namesAndTypes = namesAndTypes;
-        }
+        list<string> namesAndTypes;
+        Formals(list<string> namesAndTypes) : namesAndTypes(namesAndTypes) {}
     };
     class FormalsList : public NonTerminal{
         public:
-            List<string> namesAndTypes;
-            FormalsList(const string& name, const string& type){
+            list<string> namesAndTypes;
+            FormalsList(const string& name, const string& type){ //FIXME: AKIVA: the constructor of a child class (FormalsList) must call constructor of parent class in its initialization list (NonTerminal)
                 namesAndTypes.push_back(NonTerminal(name, type));
             }
-            FormalsList(const string& name, const string& type){
+            /*FormalsList(const string& name, const string& type) : namesAndTypes(namesAndTypes) {
                 this->namesAndTypes = namesAndTypes;
                 this->namesAndTypes.push(NonTerminal(name, type));
-            }
+            }*/ //TODO: AKIVA: please review this.  I believe this section should be deleted
             addParamToFunc(const string& name,const string& type){
                 this->namesAndTypes.push_back(NonTerminal(name, type));
             }

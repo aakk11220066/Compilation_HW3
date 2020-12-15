@@ -543,7 +543,7 @@ char *yytext;
 #line 2 "scanner.lex"
     #include <stdio.h>
     #include "parser.tab.hpp"
-    #include "output.hpp"
+    #include "hw3_output.hpp"
     
 #line 549 "lex.yy.c"
 
