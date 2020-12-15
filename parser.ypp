@@ -25,7 +25,7 @@
     class Formals : public NonTerminal{
     public:
         list<Variable> namesAndTypes;
-        Formals(list<string> namesAndTypes) : namesAndTypes(namesAndTypes) {}
+        Formals(list<Variable> namesAndTypes) : NonTerminal("", ""), namesAndTypes(namesAndTypes) {}
     };
     class FormalsList : public NonTerminal{
         public:
