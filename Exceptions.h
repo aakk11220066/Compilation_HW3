@@ -2,6 +2,17 @@
 #define HW3_EXCEPTIONS_H
 
 #include <bits/exception.h>
+#include <string>
+#include <list>
+#include <vector>
+
+#include "Symbol.h"
+
+using std::string;
+using std::list;
+using std::vector;
+
+extern list<string> varsListToTypesList(const list<Variable>& varList);
 
 namespace Exceptions {
     class HW3_Exception : std::exception {
@@ -78,7 +89,8 @@ namespace Exceptions {
         PrototypeMismatchException(int lineno, const string& name, const list<Variable>& params) : lineno(lineno), name(name), params(params) {}
         void printError() override{
             const std::list<string> typesList = varsListToTypesList(params);
-            output::errorPrototypeMismatch(lineno, name, std::vector<string>(typesList.begin(), typesList.end()));
+            vector<string> argTypes = vector<string>(typesList.begin(), typesList.end());
+            output::errorPrototypeMismatch(lineno, name, argTypes);
         }
     };
 

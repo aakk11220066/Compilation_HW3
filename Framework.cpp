@@ -41,8 +41,8 @@ void Framework::addFunction(const Function &newFunc) {
 
     int numParamsAddedSoFar = 0;
     for (Variable param : newFunc.getParameters()){
-        param.offset = -(++numParamsAddedSoFar);
-        insertVariableIntoTopScope(param); //TODO: param should be inserted into function scope, not surrounding scope
+        Variable offsetFixedParam = Variable(param.name, param.type, -(++numParamsAddedSoFar), symbol_table);
+        insertVariableIntoTopScope(offsetFixedParam); //TODO: param should be inserted into function scope, not surrounding scope
     }
 }
 
@@ -75,12 +75,12 @@ Scope &Framework::getTopScope() {
 Framework::Framework() {
     scopes.push(Scope(Scope::BLOCK, 0));
 
-    list<string> printFuncParams = list<string>();
-    printFuncParams.emplace_back("STRING");
+    list<Variable> printFuncParams = list<Variable>();
+    printFuncParams.emplace_back(Variable("stringToPrint", "STRING"));
     addFunction(Function("print",  "VOID", printFuncParams));
 
-    list<string> printiFuncParams = list<string>();
-    printFuncParams.emplace_back("INT");
+    list<Variable> printiFuncParams = list<Variable>();
+    printFuncParams.emplace_back(Variable("intToPrint", "INT"));
     addFunction(Function("printi",  "VOID", printiFuncParams));
 }
 

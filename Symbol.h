@@ -24,6 +24,9 @@ class Variable : public Symbol{
 public:
     Variable(const string &name, const string &type); //For Shlomi's use
     Variable(const string &name, const string &type, int offset, unordered_map<string, Symbol*>& symbol_table); //For Akiva's use
+    bool operator==(const Variable& other) const{
+        return (name==other.name && type==other.type && offset == other.offset);
+    }
 };
 
 class Function : public Symbol{

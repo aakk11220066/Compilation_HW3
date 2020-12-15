@@ -14,10 +14,7 @@
 	    const string type = "";
 	    stack<NonTerminal> namesAndTypes = stack<NonTerminal>();
 
-	    NonTerminal(const string& name, const string& type){
-	        this->name = name;
-	        this->type = type;
-	    }
+	    NonTerminal(const string& name, const string& type) : name(name), type(type) {}
 	};
 
 	//NonTerminal classes
@@ -97,13 +94,7 @@
         return "BYTE";
     }
 
-    list<string> varsListToTypesList(const list<Variable>& varList){
-        list<string> result = list<string>();
-        for (const Variable& var : varList){
-            result.push_back(var.type);
-        }
-        return result;
-    }
+    extern list<string> varsListToTypesList(const list<Variable>& varList);
 
     //TODO: static function for the return issue
     extern int yylineno;
