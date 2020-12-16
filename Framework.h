@@ -45,8 +45,9 @@ private:
     std::deque<Function> functions;
 
     Framework();
-    bool contains(const string& name);
+
 public:
+    bool contains(const string& name);
     bool mainExists = false;
 
     static Framework& getInstance();

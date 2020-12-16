@@ -544,7 +544,7 @@ char *yytext;
     #include <stdio.h>
     #include "parser.tab.hpp"
     #include "hw3_output.hpp"
-    
+
 #line 549 "lex.yy.c"
 
 #define INITIAL 0

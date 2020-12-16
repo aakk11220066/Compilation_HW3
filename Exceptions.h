@@ -16,6 +16,7 @@ extern list<string> varsListToTypesList(const list<Variable>& varList);
 
 namespace Exceptions {
     class HW3_Exception : std::exception {
+    public:
         virtual void printError() = 0;
     };
 
@@ -80,6 +81,17 @@ namespace Exceptions {
             output::errorUndefFunc(lineno, name);
         }
     };
+
+    class UndefException : HW3_Exception{
+    public:
+        const string name;
+        const int lineno;
+        UndefException(int lineno, const string& name) : name(name), lineno(lineno) {}
+        void printError() override{
+            output::errorDef(lineno, name);
+        }
+    };
+
 
     class PrototypeMismatchException : HW3_Exception{
     public:

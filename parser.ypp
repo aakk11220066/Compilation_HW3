@@ -1,46 +1,70 @@
 %{
 	#include <iostream>
 	#include <string>
-	#include <stack>
 	#include <list>
 	using namespace std;
 	#include "Framework.h"
 	#include "Symbol.h"
 	#include "Exceptions.h"
 
-	class NonTerminal{
-	public:
-	    const string name = "";
-	    const string type = "";
-	    stack<NonTerminal> namesAndTypes = stack<NonTerminal>();
+    class NonTerminal{
+    	public:
+    	    const string name = "";
+    	    const string type = "";
+    	    list<Variable> namesAndTypes = list<Variable>();
+            list<string> arrguments_list = list<string>();
+            NonTerminal() = default;
+    	    NonTerminal(const string& name, const string& type) : name(name), type(type) {}
+    	    NonTerminal& operator=(const NonTerminal& other){
+    	     //  name = other.name;
+    	     //  type = other.type;
+    	     //  namesAndTypes = other.namesAndTypes;
+    	    }
+    	    void addParamToFunc(const string& name,const string& type){
+                            this->namesAndTypes.push_back(Variable(name, type));
+            }
+    	};
 
-	    NonTerminal(const string& name, const string& type) : name(name), type(type) {}
-	};
+    #define YYSTYPE NonTerminal
+    extern list<string> varsListToTypesList(const list<Variable>& varList);
+
+    //TODO: static function for the return issue
+    extern int yylineno;
+    extern YYSTYPE yylval;
+
+    int yylex();
+    void yyerror(const char*);
+
+
 
 	//NonTerminal classes
     class Program : public NonTerminal{};
     class Funcs : public NonTerminal{};
     class FuncDecl : public NonTerminal{};
-    class RetType : public NonTerminal{};
-    class Formals : public NonTerminal{
+    class RetType : public NonTerminal{
     public:
+        RetType(const string& type) : NonTerminal("", type) {}
+
+    };
+    class Formals : public NonTerminal{
+        public:
         list<Variable> namesAndTypes;
-        Formals(list<Variable> namesAndTypes) : NonTerminal("", ""), namesAndTypes(namesAndTypes) {}
+        Formals(list<Variable>& namesAndTypes) : NonTerminal("", ""), namesAndTypes(namesAndTypes) {}
     };
     class FormalsList : public NonTerminal{
         public:
-            list<NonTerminal> namesAndTypes;
+            list<Variable> namesAndTypes;
             FormalsList(const string& name, const string& type) : NonTerminal("", "") {
-                namesAndTypes.push_back(NonTerminal(name, type));
+                namesAndTypes.push_back(Variable(name, type));
             }
-            void addParamToFunc(const string& name,const string& type){
-                this->namesAndTypes.push_back(NonTerminal(name, type));
-            }
+
     };
 	class FormalDecl : public NonTerminal{
+	public:
 	    FormalDecl(const string& name, const string& type) : NonTerminal(name, type) {}
 	};
     class Statements : public NonTerminal{
+    public:
         Statements(const string& type): NonTerminal("", type){}
     };
 	class Statement : public NonTerminal{
@@ -50,50 +74,48 @@
             Statement(const string& type): NonTerminal("", type), is_break(false), is_continue(false){}
             Statement(const string& type, bool is_break, bool is_continue): NonTerminal("", type), is_break(is_break), is_continue(is_continue){}
 	};
-	class Call : public NonTerminal{};
+	class Call : public NonTerminal{
+	public:
+	    Call(const string& name, const string& type) : NonTerminal(name, type){}
+
+	};
 	class ExpList : public NonTerminal{
 	    public:
-	    list<string> arrguments_list;
-	    ExpList() : NonTerminal("", ""), arrguments_list(list<string>()) {}
+	    ExpList() : NonTerminal("", "")  {}
 	};
     class Type : public NonTerminal{
+        public:
         Type(const string& type) : NonTerminal("", type) {}
     };
     class Exp : public NonTerminal{
+        public:
         Exp(const string& type) : NonTerminal("", type) {}
     };
 
-    static string typeBinopChecking(Exp e1, Exp e2){
-        if (e1.type == "INT" || e2.type == "INT"){
+    static string typeBinopAddChecking(string type1, string type2){
+        if (type1 == "INT" || type2 == "INT"){
             return "INT";
         }
-        if(e1.type == "BYTE" || e2.type == "BYTE"){
+        if(type1 == "BYTE" || type2 == "BYTE"){
             return "BYTE";
         }
-        if(e1.type == "SET" && e2.type == "SET"){
-            throw Exceptions::MismatchException(lineno);
+        if(type1 == "SET" && type2 == "SET"){
+            throw Exceptions::MismatchException(yylineno);
         }
         return "SET";
     }
 
-    string typeBinopMultiplicativeChecking(Exp e1, Exp e2){
-        if(e1.type == "SET" || e2.type == "SET"){
-            throw Exceptions::MismatchException(lineno);
+    string typeBinopMultiplicativeChecking(string type1, string type2){
+        if(type1 == "SET" || type2 == "SET"){
+            throw Exceptions::MismatchException(yylineno);
         }
-        if (e1.type == "INT" || e2.type == "INT"){
+        if (type1 == "INT" || type2 == "INT"){
             return "INT";
         }
         return "BYTE";
     }
 
-    extern list<string> varsListToTypesList(const list<Variable>& varList);
 
-    //TODO: static function for the return issue
-    extern int yylineno;
-    extern YYSTYPE yylval;
-
-    int yylex();
-    void yyerror(const char*);
 %}
 
 %right ASSIGN
@@ -126,7 +148,7 @@ Program:		Funcs {};
 Funcs:			/*epsilon*/ {} //DONE: nothing
                     |FuncDecl Funcs {}; //DONE: nothing
 FuncDecl:		RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE{
-                    Framework.getInstance().addFunction(Function($2.name,$1.type, $4.namesAndTypes));
+                    Framework::getInstance().addFunction(Function($2.name,$1.type, $4.namesAndTypes));
                 } ; // TODO: add Function to symbol table with name, type, list_of_params.  Also add parameters (=list of names, types) to symbol table + function scope
 RetType:		Type {$$ = RetType($1.type);} // DONE: extract type from Type
                     | VOID {$$ = RetType($1.type);}; //DONE: RetType.type = "VOID"
@@ -135,140 +157,158 @@ Formals:		/*epsilon*/ {} //DONE: nothing
 FormalsList:	FormalDecl {$$ = FormalsList($1.name, $1.type);} // changed: adding a list to formalsList struct
                     | FormalDecl COMMA FormalsList{$$.addParamToFunc($1.name,$1.type);} ; //DONE: extract name, type from FormalDecl and append to list of names, types extracted from FormalsList
 FormalDecl:		Type ID{FormalDecl($1.type, $2.name);} ;
-Statements:		Statement {$$ = Statements($1.type)} //Done
+Statements:		Statement {$$ = Statements($1.type);} //Done
                     | Statements Statement{} ; //nothing
-Statement:		LBRACE Statements RBRACE {Framework::getInstance().addScope(Framework::getInstance().scopeType.BLOCK);} // Done
-                    | Type ID SC {insertVariableIntoTopScope(Variable($2,$1.type));} // Done
-                    | Type ID ASSIGN Exp SC {insertVariableIntoTopScope(Variable($2,$1.type));} // Done
+Statement:		LBRACE Statements RBRACE {Framework::getInstance().addScope(Scope::BLOCK);} // Done
+                    | Type ID SC { Framework::getInstance().insertVariableIntoTopScope(Variable($2.name,$1.type));} // Done
+                    | Type ID ASSIGN Exp SC { Framework::getInstance().insertVariableIntoTopScope(Variable($2.name,$1.type));} // Done
                     | ID ASSIGN Exp SC {} //nothing
                     | Call SC {} //nothing
-                    | RETURN SC {$$ = new Statement("VOID");} // Done
-                    | RETURN Exp SC {$$ = Statement($2.type)} // Done
+                    | RETURN SC {$$ = Statement("VOID");} // Done
+                    | RETURN Exp SC {$$ = Statement($2.type);} // Done
                     | IF LPAREN Exp RPAREN Statement{
                         if ($3.type == "BOOL"){
-                            Framework::getInstance().addScope(Framework::getInstance().scopeType.IF);
+                            Framework::getInstance().addScope(Scope::IF);
                         }
                         else{
-                             throw Exceptions::MismatchException(lineno);
+                             throw Exceptions::MismatchException(yylineno);
                         }
 
                     }
                     | IF LPAREN Exp RPAREN Statement ELSE Statement {
                         if ($3.type == "BOOL"){
-                            Framework::getInstance().addScope(Framework::getInstance().scopeType.IF);
-                            Framework::getInstance().addScope(Framework::getInstance().scopeType.IF);
+                            Framework::getInstance().addScope(Scope::IF);
+                            Framework::getInstance().addScope(Scope::IF);
                         }
                         else{
-                             throw Exceptions::MismatchException(lineno);
+                             throw Exceptions::MismatchException(yylineno);
                         }
 
                     }
                     | WHILE LPAREN Exp RPAREN Statement{
                     if ($3.type == "BOOL"){
-                        Framework::getInstance().addScope(Framework::getInstance().scopeType.LOOP);
+                        Framework::getInstance().addScope(Scope::LOOP);
                     }
                     else{
-                        throw Exceptions::MismatchException(lineno);
+                        throw Exceptions::MismatchException(yylineno);
                     }
 
                     }
                     | BREAK SC{
-                        if(Framework::getInstance().scopes.getTopScope().getType() != scopeType.LOOP){
-                             throw Exceptions::UnexpectedBreakException(lineno);
+                        if(Framework::getInstance().getTopScope().getScopeType() != Scope::LOOP){
+                             throw Exceptions::UnexpectedBreakException(yylineno);
                     }
                      }
                     | CONTINUE SC{
-                        if(Framework::getInstance().scopes.getTopScope().getScopeType() != scopeType.LOOP){
-                            throw Exceptions::UnexpectedContinueException(lineno);
+                        if(Framework::getInstance().getTopScope().getScopeType() != Scope::LOOP){
+                            throw Exceptions::UnexpectedContinueException(yylineno);
                         }
                     }
 Call:			ID LPAREN ExpList RPAREN {
-                        if(!Framework::getInstance().contains($1.name)){
-                            throw Exceptions::UndefFuncException(lineno,$1.name);
-                        }
                         //TODO: do not use symbol_table.operator[], instead use Framework.operator[].  And don't check if returned NULL, instead just catch IdentifierDoesNotExistException
-                        string type = Framework::getInstance().symbol_table[$1.name].type; // check the syntax. need Framework::getInstance().symbol_table[$1.name] to be a "Function" struct
-                        if(!Framework::getInstance().symbol_table[$1.name].getList() == $3.getList()){
-                            throw Exceptions::PrototypeMismatchException(lineno,$1.name,Framework::getInstance().symbol_table[$1.name].getParameters());
+                        try{
+                            string type = Framework::getInstance()[$1.name].type; // check the syntax. need Framework::getInstance().symbol_table[$1.name] to be a "Function" struct
+                            if(varsListToTypesList(dynamic_cast<Function&>(Framework::getInstance()[$1.name]).getParameters()) != $3.arrguments_list){
+                                throw Exceptions::PrototypeMismatchException(yylineno,$1.name,dynamic_cast<Function&>(Framework::getInstance()[$1.name]).getParameters());
+                            }
+                            $$ = Call ($1.name, type);
                         }
-                        $$ = new Call ($1.name, type)
+                        catch(Exceptions::IdentifierDoesNotExistException &e){
+                            throw Exceptions::UndefFuncException(yylineno, $1.name);
                         }
+
+
+                    }
                     | ID LPAREN RPAREN {
-                    if(!Framework::getInstance().contains($1.name)){
-                       throw Exceptions::UndefFuncException(lineno,$1.name)
-                       }
-                       string type = Framework::getInstance().symbol_table[$1.name].type;
-                       $$ = new Call ($1.name, type)
+
+                        try{
+                               string type = Framework::getInstance()[$1.name].type;
+                               $$ = Call ($1.name, type);
+                        }
+                        catch(Exceptions::IdentifierDoesNotExistException &e){
+                            throw Exceptions::UndefFuncException(yylineno, $1.name);
+                        }
                     }; //
-ExpList:		Exp {   $$ = new ExpList(); // making the one size list by adding the EXP type into the list
-                        $$.addTypeToListArrguments($1.type);} //
-                    | Exp COMMA ExpList { $$.addTypeToListArrguments($1.type)}; // adding into the list
-Type:			INT {$$ = new Type("INT");}
-                    | BYTE{$$ = new Type("BYTE");}
-                    | BOOL {$$ = new Type("BOOL");}
-                    | SET LBRACKET NUM DOTS NUM RBRACKET {$$ = new Type("SET");};
-Exp:			LPAREN Exp RPAREN {$$ = new Exp($2.type);} //
+ExpList:		Exp {   $$ = ExpList(); // making the one size list by adding the EXP type into the list
+                        $$.arrguments_list.push_back($1.type);
+
+                     } //
+                    | Exp COMMA ExpList { $$.arrguments_list.push_back($1.type);}// adding into the list
+Type:			INT {$$ = Type("INT");}
+                    | BYTE{$$ =  Type("BYTE");}
+                    | BOOL {$$ =  Type("BOOL");}
+                    | SET LBRACKET NUM DOTS NUM RBRACKET {$$ = Type("SET");};
+Exp:			LPAREN Exp RPAREN {$$ =  Exp($2.type);} //
                     | Exp BINOP_ADDITIVE Exp {
-                        string res_type = typeBinopAddChecking($1,$2);
-                        $$ = new Exp(res_type);
+                        string res_type = typeBinopAddChecking($1.type, $3.type);
+                        $$ = Exp(res_type);
                         } //
                     | Exp BINOP_MULTIPLICATIVE Exp {
-                        string res_type = typeBinopMultiplicativeChecking($1,$2);
-                        $$ = new Exp(res_type);
+                        string res_type = typeBinopMultiplicativeChecking($1.type, $3.type);
+                        $$ = Exp(res_type);
                     }
-                    | ID {$$ = new Exp(Framework::getInstance().symbol_table[$1.name].type);} //
-                    | Call {$$ = new Exp($1.type);}
-                    | NUM {$$ = new Exp("INT");}
-                    | NUM B {$$ = new Exp("BYTE");}
-                    | STRING {$$ = new Exp("STRING");}
-                    | TRUE {$$ = new Exp("BOOL");}
-                    | FALSE {$$ = new Exp("BOOL");}
+                    | ID {
+                            try{
+                                $$ =  Exp(Framework::getInstance()[$1.name].type);
+                            }
+                            catch(Exceptions::IdentifierDoesNotExistException &e){
+                                throw Exceptions::UndefException(yylineno, $1.name);
+                            }
+
+
+                      } //
+                    | Call {$$ =  Exp($1.type);}
+                    | NUM {$$ = Exp("INT");}
+                    | NUM B {$$ =  Exp("BYTE");}
+                    | STRING {$$ =  Exp("STRING");}
+                    | TRUE {$$ =  Exp("BOOL");}
+                    | FALSE {$$ =  Exp("BOOL");}
                     | NOT Exp {
                         if($2.type != "BOOL"){
-                            throw Exceptions::MismatchException(lineno);
+                            throw Exceptions::MismatchException(yylineno);
                         }
                         else{
-                            $$ = new Exp("BOOL");
+                            $$ =  Exp("BOOL");
                         }
                     }
                     | Exp AND Exp {
                         if($1.type != "BOOL" || $3.type != "BOOL"){
-                           throw Exceptions::MismatchException(lineno);
+                           throw Exceptions::MismatchException(yylineno);
                        }
                        else{
-                           $$ = new Exp("BOOL");
+                           $$ =  Exp("BOOL");
                        }
                     }
                     | Exp OR Exp{
                         if($1.type != "BOOL" || $3.type != "BOOL"){
-                           throw Exceptions::MismatchException(lineno);
+                           throw Exceptions::MismatchException(yylineno);
                        }
                        else{
-                           $$ = new Exp("BOOL");
+                           $$ =  Exp("BOOL");
                        }
                     }
                     | Exp RELOP_RELATIONAL Exp {
                         if(($1.type != "INT" && $1.type != "BYTE") || ($2.type != "INT" && $2.type != "BYTE")){
-                            throw Exceptions::MismatchException(lineno);.
+                            throw Exceptions::MismatchException(yylineno);
                         }
                         else{
-                            $$ = new Exp ("BOOL");
+                            $$ =  Exp ("BOOL");
                         }
                     }
                     | Exp RELOP_EQUALITY Exp {
                         if(($1.type != "INT" && $1.type != "BYTE") || ($2.type != "INT" && $2.type != "BYTE")){
-                          throw Exceptions::MismatchException(lineno);
+                          throw Exceptions::MismatchException(yylineno);
                       }
                       else{
-                          $$ = new Exp ("BOOL");
+                          $$ =  Exp ("BOOL");
                       }
                     }
                     | LPAREN Type RPAREN Exp {
                         if($2.type != "INT" || $4.type !="SET"){
-                            throw Exceptions::MismatchException(lineno);
+                            throw Exceptions::MismatchException(yylineno);
                         }
                         else{
-                            $$ = new Exp("INT");
+                            $$ =  Exp("INT");
                         }
 
                     };
