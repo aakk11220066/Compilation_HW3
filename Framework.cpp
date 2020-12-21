@@ -12,7 +12,10 @@ Variable& Scope::insert(const Variable &newVar, unordered_map<string, Symbol*>& 
 }
 
 Scope::~Scope() {
-    output::endScope();
+    for (const Variable& var : variables){
+        output::printID(var.name, var.offset, var.type);
+        Framework::getInstance().symbol_table.erase(var.name);
+    }
 }
 
 Scope::Scope(Scope::ScopeType scopeType, int offset) : scopeType(scopeType), nextOffset(offset){}
@@ -95,5 +98,18 @@ Framework::Framework() {
 Framework singleton = Framework();
 Framework& Framework::getInstance() {
     return singleton;
+}
+
+void Framework::popScope() {
+    scopes.pop();
+    output::endScope();
+}
+
+Framework::~Framework() {
+    for (const Function& func : functions){
+        const list<string> argsTypesList = varsListToTypesList(func.getParameters());
+        vector<string> argsTypesVector = vector<string>(argsTypesList.begin(), argsTypesList.end());
+        output::printID(func.name, func.offset, output::makeFunctionType(func.type, argsTypesVector));
+    }
 }
 

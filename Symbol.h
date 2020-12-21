@@ -12,7 +12,7 @@ class Symbol{
 public:
     const string name, type;
     const int offset = 0;
-    virtual ~Symbol();
+    virtual ~Symbol() = default;
 protected:
     std::unordered_map<string, Symbol*>* symbol_table = nullptr; //only stored for the destructor
     Symbol(const string &name, const string &type);
@@ -27,8 +27,7 @@ public:
     bool operator==(const Variable& other) const{
         return (name==other.name && type==other.type && offset == other.offset);
     }
-
-    virtual ~Variable();
+    virtual ~Variable() = default;
 };
 
 class Function : public Symbol{
@@ -37,10 +36,9 @@ public:
     Function(const string &name, const string &type, std::list<Variable>& params); //For Shlomi's use
     Function(const string &name, const string &type, unordered_map<string, Symbol *> &symbol_table, const list<Variable>& params);
 
-    virtual ~Function();
-
     //For Akiva's use
     const std::list<Variable>& getParameters() const;
+    virtual ~Function() = default;
 };
 
 
