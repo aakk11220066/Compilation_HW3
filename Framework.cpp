@@ -57,6 +57,9 @@ void Framework::addFunction(const Function &newFunc) {
 Symbol &Framework::operator[](const string &name) {
     
     try{
+        std::cout << std::endl << std::endl << "symtab.size() = " << symbol_table.size() << std::endl << std::endl;
+        for (std::pair<const string&,Symbol*> myPair : symbol_table) std::cout << myPair.first << std::endl;
+
         return *(symbol_table.at(name));
     } catch(std::out_of_range&) {
         throw Exceptions::IdentifierDoesNotExistException(0, name); //FIXME: 0 is only a placeholder number, should be lineno
@@ -85,7 +88,7 @@ Scope &Framework::getTopScope() {
 Framework::Framework() {
     
     scopes.push(std::move(Scope(Scope::BLOCK, 0)));
-
+string print(string stringToPrint);
     list<Variable> printFuncParams = list<Variable>();
     printFuncParams.emplace_back(Variable("stringToPrint", "STRING"));
     addFunction(Function("print",  "VOID", printFuncParams));
