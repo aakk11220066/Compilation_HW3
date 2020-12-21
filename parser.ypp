@@ -158,16 +158,18 @@ Formals:		/*epsilon*/ {} //DONE: nothing
 FormalsList:	FormalDecl {$$ = FormalsList($1.name, $1.type);} // changed: adding a list to formalsList struct
                     | FormalDecl COMMA FormalsList{$$.addParamToFunc($1.name,$1.type);} ; //DONE: extract name, type from FormalDecl and append to list of names, types extracted from FormalsList
 FormalDecl:		Type ID{FormalDecl($1.type, $2.name);} ;
+FormalDecl:		Type ID{FormalDecl($1.type, $2.name);} ;
 Statements:		Statement {$$ = Statements($1.type);} //Done
                     | Statements Statement{} ; //nothing
 Statement:		LBRACE Statements RBRACE {Framework::getInstance().addScope(Scope::BLOCK);} // Done
                     | Type ID SC { Framework::getInstance().insertVariableIntoTopScope(Variable($2.name,$1.type));} // Done
                     | Type ID ASSIGN Exp SC { Framework::getInstance().insertVariableIntoTopScope(Variable($2.name,$1.type));} // Done
-                    | ID ASSIGN Exp SC {} //nothing
+                    | ID ASSIGN Exp SC {printf("------=-------");} //nothing
                     | Call SC {} //nothing
                     | RETURN SC {$$ = Statement("VOID");} // Done
                     | RETURN Exp SC {$$ = Statement($2.type);} // Done
                     | IF LPAREN Exp RPAREN Statement{
+                        printf("-----------if-------------");
                         if ($3.type == "BOOL"){
                             Framework::getInstance().addScope(Scope::IF);
                         }
