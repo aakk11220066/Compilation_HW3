@@ -44,9 +44,9 @@ private:
     std::unordered_map<string, Symbol*> symbol_table;
     std::deque<Function> functions;
 
+public:
     Framework();
 
-public:
     bool contains(const string& name);
     bool mainExists = false;
 

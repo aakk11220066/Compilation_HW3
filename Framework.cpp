@@ -93,9 +93,8 @@ Framework::Framework() {
     addFunction(Function("printi",  "VOID", printiFuncParams));
 }
 
+Framework singleton = Framework();
 Framework& Framework::getInstance() {
-    
-    static Framework singleton = Framework();
     return singleton;
 }
 
