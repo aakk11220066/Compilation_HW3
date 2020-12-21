@@ -26,7 +26,7 @@
             }
     	};
 
-    #define YYSTYPE NonTerminal
+    #define YYSTYPE NonTerminal*
     extern list<string> varsListToTypesList(const list<Variable>& varList);
 
     //TODO: static function for the return issue
@@ -149,6 +149,7 @@ Program:		Funcs {};
 Funcs:			/*epsilon*/ {} //DONE: nothing
                     |FuncDecl Funcs {}; //DONE: nothing
 FuncDecl:		RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE{
+                    printf("FuncDecl\n");
                     Framework::getInstance().addFunction(Function($2.name,$1.type, $4.namesAndTypes));
                 } ; // TODO: add Function to symbol table with name, type, list_of_params.  Also add parameters (=list of names, types) to symbol table + function scope
 RetType:		Type {$$ = RetType($1.type);} // DONE: extract type from Type
@@ -156,10 +157,12 @@ RetType:		Type {$$ = RetType($1.type);} // DONE: extract type from Type
 Formals:		/*epsilon*/ {} //DONE: nothing
                     | FormalsList {$$ = Formals($1.namesAndTypes);} ; // DONE: extract names, types from FormalsList.
 FormalsList:	FormalDecl {$$ = FormalsList($1.name, $1.type);} // changed: adding a list to formalsList struct
-                    | FormalDecl COMMA FormalsList{$$.addParamToFunc($1.name,$1.type);} ; //DONE: extract name, type from FormalDecl and append to list of names, types extracted from FormalsList
+                    | FormalDecl COMMA FormalsList{$$.addParamToFunc($1.name,$1.type);
+                    printf("FormalsList\n");
+                    } ; //DONE: extract name, type from FormalDecl and append to list of names, types extracted from FormalsList
 FormalDecl:		Type ID{FormalDecl($1.type, $2.name);} ;
-FormalDecl:		Type ID{FormalDecl($1.type, $2.name);} ;
-Statements:		Statement {$$ = Statements($1.type);} //Done
+Statements:		Statement {$$ = Statements($1.type);
+                                printf("Statement\n");} //Done
                     | Statements Statement{} ; //nothing
 Statement:		LBRACE Statements RBRACE {Framework::getInstance().addScope(Scope::BLOCK);} // Done
                     | Type ID SC { Framework::getInstance().insertVariableIntoTopScope(Variable($2.name,$1.type));} // Done
@@ -217,6 +220,7 @@ Call:			ID LPAREN ExpList RPAREN {
                             $$ = Call ($1.name, type);
                         }
                         catch(Exceptions::IdentifierDoesNotExistException &e){
+                            printf("2");
                             throw Exceptions::UndefFuncException(yylineno, $1.name);
                         }
 
@@ -229,9 +233,10 @@ Call:			ID LPAREN ExpList RPAREN {
                                $$ = Call ($1.name, type);
                         }
                         catch(Exceptions::IdentifierDoesNotExistException &e){
+                            printf("1");
                             throw Exceptions::UndefFuncException(yylineno, $1.name);
                         }
-                    }; //
+                    };
 ExpList:		Exp {   $$ = ExpList(); // making the one size list by adding the EXP type into the list
                         $$.arrguments_list.push_back($1.type);
 
@@ -252,11 +257,14 @@ Exp:			LPAREN Exp RPAREN {$$ =  Exp($2.type);} //
                     }
                     | ID {
                             try{
-                                $$ =  Exp(Framework::getInstance()[$1.name].type);
-                            }
-                            catch(Exceptions::IdentifierDoesNotExistException &e){
-                                throw Exceptions::UndefException(yylineno, $1.name);
-                            }
+                            printf("dffsf\n");
+                            printf("%s\n" , $1);
+                            printf("%s\n" , $1);
+                                $$ =  Exp(Framework::getInstance()[$1].type);
+                           }
+                           catch(Exceptions::IdentifierDoesNotExistException &e){
+                               throw Exceptions::UndefException(yylineno, $1.name);
+                           }
 
 
                       } //

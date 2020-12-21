@@ -58,7 +58,7 @@ continue                    return CONTINUE;
 {binop_multiplicative}      return BINOP_MULTIPLICATIVE;
 {binop_additive}            return BINOP_ADDITIVE;
 {comment}                   ;
-{id}                        return ID;
+{id}                        {yylval = new NonTerminal(yytext , yytext); return ID;}
 {num}                       return NUM;
 {good_string}               return STRING;
 {space}                     ;
