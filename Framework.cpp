@@ -12,7 +12,6 @@ Variable& Scope::insert(const Variable &newVar, unordered_map<string, Symbol*>& 
 }
 
 Scope::~Scope() {
-    
     output::endScope();
 }
 
@@ -82,7 +81,7 @@ Scope &Framework::getTopScope() {
 
 Framework::Framework() {
     
-    scopes.push(Scope(Scope::BLOCK, 0));
+    scopes.push(std::move(Scope(Scope::BLOCK, 0)));
 
     list<Variable> printFuncParams = list<Variable>();
     printFuncParams.emplace_back(Variable("stringToPrint", "STRING"));

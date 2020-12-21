@@ -53,6 +53,7 @@ public:
     static Framework& getInstance();
     void insertVariableIntoTopScope(const Variable &newVar);
     void addScope(enum Scope::ScopeType scopeType);
+    void popScope(); //pops top scope off scopes stack
     void addFunction(const Function &newFunc);
     Symbol& operator[](const string& name); //for accessing the symbol_table
     Scope& getTopScope();
