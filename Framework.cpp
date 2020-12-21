@@ -1,6 +1,8 @@
 #include <assert.h>
 #include "Framework.h"
 
+#include <iostream>
+#define DEBUG_PRINT(str) std::cout << str << std::endl
 
 //NOTE: must modify default offset of Variable to correct offset!
 Variable& Scope::insert(const Variable &newVar, unordered_map<string, Symbol*>& symbol_table) {
@@ -10,6 +12,7 @@ Variable& Scope::insert(const Variable &newVar, unordered_map<string, Symbol*>& 
 }
 
 Scope::~Scope() {
+    
     output::endScope();
 }
 
@@ -24,6 +27,7 @@ int Scope::getNextOffset() const {
 }
 
 void Framework::insertVariableIntoTopScope(const Variable &newVar) {
+    
     if (contains(newVar.name)) throw Exceptions::AlreadyExistsException(0, newVar.name); //FIXME: 0 is only a placeholder number, should be lineno
     Variable& addedVar = scopes.top().insert(newVar, symbol_table);
     symbol_table.insert({newVar.name, &addedVar});
@@ -31,6 +35,7 @@ void Framework::insertVariableIntoTopScope(const Variable &newVar) {
 
 
 void Framework::addFunction(const Function &newFunc) {
+    
     if (contains(newFunc.name)) throw Exceptions::AlreadyExistsException(0, newFunc.name); //FIXME: 0 is only a placeholder number, should be lineno
     assert(newFunc.offset == 0);
     if (newFunc.name == "main" && newFunc.type == "INT" && newFunc.getParameters() == list<Variable>()) mainExists = true;
@@ -48,6 +53,7 @@ void Framework::addFunction(const Function &newFunc) {
 
 
 Symbol &Framework::operator[](const string &name) {
+    
     try{
         return *(symbol_table.at(name));
     } catch(std::out_of_range&) {
@@ -56,6 +62,7 @@ Symbol &Framework::operator[](const string &name) {
 }
 
 bool Framework::contains(const string &name) {
+    
     try{
         symbol_table.at(name);
     } catch(std::out_of_range&){
@@ -65,6 +72,7 @@ bool Framework::contains(const string &name) {
 }
 
 void Framework::addScope(enum Scope::ScopeType scopeType) {
+    
     scopes.push(Scope(scopeType, scopes.top().getNextOffset()));
 }
 
@@ -73,6 +81,7 @@ Scope &Framework::getTopScope() {
 }
 
 Framework::Framework() {
+    
     scopes.push(Scope(Scope::BLOCK, 0));
 
     list<Variable> printFuncParams = list<Variable>();
@@ -85,6 +94,7 @@ Framework::Framework() {
 }
 
 Framework& Framework::getInstance() {
+    
     static Framework singleton = Framework();
     return singleton;
 }

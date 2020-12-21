@@ -14,7 +14,7 @@ public:
     const int offset = 0;
     virtual ~Symbol();
 protected:
-    std::unordered_map<string, Symbol*>* symbol_table; //only stored for the destructor
+    std::unordered_map<string, Symbol*>* symbol_table = nullptr; //only stored for the destructor
     Symbol(const string &name, const string &type);
     Symbol(const string &name, const string &type, unordered_map<string, Symbol*>& symbol_table);
     Symbol(const string &name, const string &type, int offset, unordered_map<string, Symbol*>& symbol_table);

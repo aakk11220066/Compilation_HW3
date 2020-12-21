@@ -19,6 +19,7 @@
     	     //  name = other.name;
     	     //  type = other.type;
     	     //  namesAndTypes = other.namesAndTypes;
+    	     return *this;
     	    }
     	    void addParamToFunc(const string& name,const string& type){
                             this->namesAndTypes.push_back(Variable(name, type));

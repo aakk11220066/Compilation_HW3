@@ -2,7 +2,7 @@
 
 Symbol::~Symbol() {
     output::printID(name, offset, type);
-    symbol_table->erase(name);
+    if (symbol_table) symbol_table->erase(name);
 }
 
 Symbol::Symbol(const string &name, const string &type) : name(name), type(type), symbol_table(nullptr) {}

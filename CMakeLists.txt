@@ -3,4 +3,4 @@ project(HW3)
 
 set(CMAKE_CXX_STANDARD 11)
 
-add_executable(HW3 Framework.cpp hw3_output.cpp Symbol.cpp Exceptions.h lex.yy.c parser.tab.cpp Exceptions.cpp hw3_output.hpp)
+add_executable(HW3 Framework.cpp hw3_output.cpp Symbol.cpp lex.yy.cpp parser.tab.cpp Exceptions.cpp)
