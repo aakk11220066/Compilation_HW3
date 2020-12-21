@@ -33,7 +33,11 @@ class Function : public Symbol{
     std::list<Variable> params;
 public:
     Function(const string &name, const string &type, std::list<Variable>& params); //For Shlomi's use
-    Function(const string &name, const string &type, unordered_map<string, Symbol *> &symbol_table, const list<Variable>& params); //For Akiva's use
+    Function(const string &name, const string &type, unordered_map<string, Symbol *> &symbol_table, const list<Variable>& params);
+
+    virtual ~Function();
+
+    //For Akiva's use
     const std::list<Variable>& getParameters() const;
 };
 

@@ -1,7 +1,14 @@
 #include "Symbol.h"
 
+list<string> varsListToTypesList(const list<Variable>& varList){
+    list<string> result = list<string>();
+    for (const Variable& var : varList){
+        result.push_back(var.type);
+    }
+    return result;
+}
+
 Symbol::~Symbol() {
-    output::printID(name, offset, type);
     if (symbol_table) symbol_table->erase(name);
 }
 
@@ -23,4 +30,10 @@ Function::Function(const string &name, const string &type, unordered_map<string,
 
 const std::list<Variable> &Function::getParameters() const {
     return params;
+}
+
+Function::~Function() {
+    const list<string> argsTypesList = varsListToTypesList(params);
+    vector<string> argsTypesVector = vector<string>(argsTypesList.begin(), argsTypesList.end());
+    output::printID(name, offset, output::makeFunctionType(type, argsTypesVector));
 }
