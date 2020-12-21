@@ -27,6 +27,8 @@ public:
     bool operator==(const Variable& other) const{
         return (name==other.name && type==other.type && offset == other.offset);
     }
+
+    virtual ~Variable();
 };
 
 class Function : public Symbol{

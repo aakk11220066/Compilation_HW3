@@ -23,6 +23,10 @@ Variable::Variable(const string &name, const string &type) : Symbol(name, type) 
 
 Variable::Variable(const string &name, const string &type, int offset, unordered_map<string, Symbol*>& symbol_table) : Symbol(name, type, offset, symbol_table) {}
 
+Variable::~Variable() {
+    output::printID(name, offset, type);
+}
+
 Function::Function(const string &name, const string &type, std::list<Variable>& params) : Symbol(name, type), params(params) {}
 
 Function::Function(const string &name, const string &type, unordered_map<string, Symbol *> &symbol_table, const std::list<Variable> &params)
