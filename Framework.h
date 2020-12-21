@@ -41,10 +41,11 @@ public:
 class Framework {
 private:
     std::stack<Scope> scopes;
-    std::unordered_map<string, Symbol*> symbol_table;
     std::deque<Function> functions;
 
 public:
+    std::unordered_map<string, Symbol*> symbol_table;
+
     Framework();
 
     bool contains(const string& name);
