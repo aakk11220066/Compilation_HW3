@@ -2,7 +2,7 @@
     #include <stdio.h>
     #include "parser.tab.hpp"
     #include "hw3_output.hpp"
-
+//
 %}
 
 %option yylineno
