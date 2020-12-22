@@ -4,7 +4,7 @@
 #include <iostream>
 #define DEBUG_PRINT(str) std::cout << str << std::endl
 
-//NOTE: must modify default offset of Variable to correct offset!
+//NOTE: must modify default offset of Variable to correct offset! //
 Variable& Scope::insert(const Variable &newVar, unordered_map<string, Symbol*>& symbol_table) {
     Variable addedVar = Variable(newVar.name, newVar.type, newVar.offset + (nextOffset++), symbol_table);
     variables.push_back(addedVar);

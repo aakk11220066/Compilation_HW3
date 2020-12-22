@@ -36,7 +36,7 @@ public:
     Scope(enum ScopeType scopeType, int offset);
 };
 
-
+//
 
 class Framework {
 private:
