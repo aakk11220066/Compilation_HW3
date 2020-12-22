@@ -2082,7 +2082,7 @@ yyreturn:
                   yytoken, &yylval);
     }
   /* Do not reclaim the symbols of the rule whose action triggered
-     this YYABORT or YYACCEPT.  */
+     this YYABORT or YYACCEPT.  */ //
   YYPOPSTACK (yylen);
   YY_STACK_PRINT (yyss, yyssp);
   while (yyssp != yyss)
