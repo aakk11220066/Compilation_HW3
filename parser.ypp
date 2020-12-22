@@ -6,11 +6,12 @@
 	#include "Framework.h"
 	#include "Symbol.h"
 	#include "Exceptions.h"
+	#include "source.h"
 
-    class NonTerminal{
+/*    class NonTerminal{
     	public:
-    	    const string name = "";
-    	    const string type = "";
+    	    const string name;
+    	    const string type;
     	    list<Variable> namesAndTypes = list<Variable>();
             list<string> arrguments_list = list<string>();
             NonTerminal() = default;
@@ -24,15 +25,12 @@
     	    void addParamToFunc(const string& name,const string& type){
                             this->namesAndTypes.push_back(Variable(name, type));
             }
-    	};
+    	};*/
 
     #define YYSTYPE NonTerminal
     extern list<string> varsListToTypesList(const list<Variable>& varList);
 
-    //TODO: static function for the return issue
     extern int yylineno;
-    extern YYSTYPE yylval;
-
     int yylex();
     void yyerror(const char*);
 
@@ -151,7 +149,7 @@ Program:		Funcs {};
 Funcs:			/*epsilon*/ {} //DONE: nothing
                     |FuncDecl Funcs {}; //DONE: nothing
 FuncDecl:		RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE{
-                    Framework::getInstance().addFunction(Function($2.name,$1.type, $4.namesAndTypes));
+                    Framework::getInstance().addFunction(Function(yylval.name,$1.type, $4.namesAndTypes));
                 } ; // TODO: add Function to symbol table with name, type, list_of_params.  Also add parameters (=list of names, types) to symbol table + function scope
 RetType:		Type {$$ = RetType($1.type);} // DONE: extract type from Type
                     | VOID {$$ = RetType($1.type);}; //DONE: RetType.type = "VOID"

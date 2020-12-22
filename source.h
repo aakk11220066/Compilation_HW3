@@ -9,8 +9,8 @@ using namespace std;
 
 class NonTerminal{
 public:
-    const string name = "";
-    const string type = "";
+    string name;
+    const string type;
     list<Variable> namesAndTypes = list<Variable>();
     list<string> arrguments_list = list<string>();
     NonTerminal() = default;

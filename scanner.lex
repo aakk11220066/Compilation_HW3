@@ -59,7 +59,11 @@ continue                    return CONTINUE;
 {binop_multiplicative}      return BINOP_MULTIPLICATIVE;
 {binop_additive}            return BINOP_ADDITIVE;
 {comment}                   ;
-{id}                        {yylval = NonTerminal(yytext, ""); return ID;}
+{id}                        {
+                                yylval = NonTerminal(strdup(yytext), "");
+                                yylval.name = strdup(yytext);
+                                return ID;
+                            }
 {num}                       return NUM;
 {good_string}               return STRING;
 {space}                     ;
