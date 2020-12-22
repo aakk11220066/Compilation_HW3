@@ -40,6 +40,6 @@ public:
     const std::list<Variable>& getParameters() const;
     virtual ~Function() = default;
 };
-
+//
 
 #endif //HW3_NONTERMINALS_H
