@@ -64,6 +64,7 @@ Symbol &Framework::operator[](const string &name) {
     } catch(std::out_of_range&) {
         throw Exceptions::IdentifierDoesNotExistException(0, name); //FIXME: 0 is only a placeholder number, should be lineno
     }
+
 }
 
 bool Framework::contains(const string &name) {

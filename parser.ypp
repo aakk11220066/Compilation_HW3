@@ -6,26 +6,7 @@
 	#include "Framework.h"
 	#include "Symbol.h"
 	#include "Exceptions.h"
-	#include "source.h"
-
-/*    class NonTerminal{
-    	public:
-    	    const string name;
-    	    const string type;
-    	    list<Variable> namesAndTypes = list<Variable>();
-            list<string> arrguments_list = list<string>();
-            NonTerminal() = default;
-    	    NonTerminal(const string& name, const string& type) : name(name), type(type) {}
-    	    NonTerminal& operator=(const NonTerminal& other){
-    	     //  name = other.name;
-    	     //  type = other.type;
-    	     //  namesAndTypes = other.namesAndTypes;
-    	     return *this;
-    	    }
-    	    void addParamToFunc(const string& name,const string& type){
-                            this->namesAndTypes.push_back(Variable(name, type));
-            }
-    	};*/
+    #include "source.h"
 
     #define YYSTYPE NonTerminal
     extern list<string> varsListToTypesList(const list<Variable>& varList);
@@ -148,7 +129,12 @@
 Program:		Funcs {};
 Funcs:			/*epsilon*/ {} //DONE: nothing
                     |FuncDecl Funcs {}; //DONE: nothing
-FuncDecl:		RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE{
+FuncDecl:		RetType ID LPAREN Formals RPAREN LBRACE {Framework::getInstance().addScope(Scope::FUNCTION);
+                                                            for (const Variable& var : $4.namesAndTypes){
+                                                                Framework::getInstance().insertVariableIntoTopScope(var);
+                                                            }
+                                                        } Statements {Framework::getInstance().popScope();
+                                                                     } RBRACE{
                     Framework::getInstance().addFunction(Function(yylval.name,$1.type, $4.namesAndTypes));
                 } ; // TODO: add Function to symbol table with name, type, list_of_params.  Also add parameters (=list of names, types) to symbol table + function scope
 RetType:		Type {$$ = RetType($1.type);} // DONE: extract type from Type
@@ -160,7 +146,8 @@ FormalsList:	FormalDecl {$$ = FormalsList($1.name, $1.type);} // changed: adding
 FormalDecl:		Type ID{FormalDecl($1.type, $2.name);} ;
 Statements:		Statement {$$ = Statements($1.type);} //Done
                     | Statements Statement{} ; //nothing
-Statement:		LBRACE Statements RBRACE {Framework::getInstance().addScope(Scope::BLOCK);} // Done
+Statement:		LBRACE {Framework::getInstance().addScope(Scope::BLOCK);} Statements
+                         {Framework::getInstance().popScope();} RBRACE {} // Done
                     | Type ID SC { Framework::getInstance().insertVariableIntoTopScope(Variable($2.name,$1.type));} // Done
                     | Type ID ASSIGN Exp SC { Framework::getInstance().insertVariableIntoTopScope(Variable($2.name,$1.type));} // Done
                     | ID ASSIGN Exp SC {printf("------=-------");} //nothing
@@ -178,24 +165,18 @@ Statement:		LBRACE Statements RBRACE {Framework::getInstance().addScope(Scope::B
                         }
 
                     }
-                    | IF LPAREN Exp RPAREN Statement ELSE Statement {
-                        if ($3.type == "BOOL"){
-                            Framework::getInstance().addScope(Scope::IF);
-                            Framework::getInstance().addScope(Scope::IF);
-                        }
-                        else{
+                    | IF LPAREN  Exp  RPAREN {Framework::getInstance().addScope(Scope::IF);}
+                     Statement {Framework::getInstance().popScope();} ELSE {Framework::getInstance().addScope(Scope::IF);} Statement {Framework::getInstance().popScope();} {
+                        if ($3.type != "BOOL"){
                             output::errorMismatch(yylineno);
                             exit(0);
                         }
 
                     }
-                    | WHILE LPAREN Exp RPAREN Statement{
-                    if ($3.type == "BOOL"){
-                        Framework::getInstance().addScope(Scope::LOOP);
-                    }
-                    else{
-                             output::errorMismatch(yylineno);
-                             exit(0);
+                    | WHILE LPAREN Exp RPAREN {Framework::getInstance().addScope(Scope::LOOP);} Statement {Framework::getInstance().popScope();} {
+                    if ($3.type != "BOOL"){
+                         output::errorMismatch(yylineno);
+                         exit(0);
                     }
 
                     }
