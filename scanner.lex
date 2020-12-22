@@ -1,8 +1,9 @@
 %{
     #include <stdio.h>
+    #include "source.h"
+    #define YYSTYPE NonTerminal
     #include "parser.tab.hpp"
     #include "hw3_output.hpp"
-//
 %}
 
 %option yylineno
@@ -58,7 +59,7 @@ continue                    return CONTINUE;
 {binop_multiplicative}      return BINOP_MULTIPLICATIVE;
 {binop_additive}            return BINOP_ADDITIVE;
 {comment}                   ;
-{id}                        return ID;
+{id}                        {yylval = NonTerminal(yytext, ""); return ID;}
 {num}                       return NUM;
 {good_string}               return STRING;
 {space}                     ;
