@@ -49,6 +49,7 @@ public:
 
     bool contains(const string& name);
     bool mainExists = false;
+    bool exitOnError = false;
 
     static Framework& getInstance();
     void insertVariableIntoTopScope(const Variable &newVar);

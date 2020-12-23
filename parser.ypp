@@ -15,7 +15,10 @@
     int yylex();
     void yyerror(const char*);
 
-
+    void myExit(){
+        Framework::getInstance().exitOnError = true;
+        exit(0);
+    }
 
 	//NonTerminal classes
     class Program : public NonTerminal{};
@@ -83,7 +86,7 @@
         }
         if(type1 == "SET" && type2 == "SET"){
             output::errorMismatch(yylineno);
-            exit(0);
+            myExit();
         }
         return "SET";
     }
@@ -91,7 +94,7 @@
     string typeBinopMultiplicativeChecking(string type1, string type2){
         if(type1 == "SET" || type2 == "SET"){
             output::errorMismatch(yylineno);
-            exit(0);
+            myExit();
         }
         if (type1 == "INT" || type2 == "INT"){
             return "INT";
@@ -148,7 +151,6 @@ FuncDecl:		RetType
 
                         ++numParamsAddedSoFar;
                         Variable offsetFixedParam = Variable(param.name, param.type, -numParamsAddedSoFar);
-                        cout << param.name << " offset = " << offsetFixedParam.offset << endl;
                         Framework::getInstance().insertVariableIntoTopScope(offsetFixedParam);
                     }
                 }
@@ -177,8 +179,9 @@ FormalsList:	FormalDecl {
 FormalDecl:		Type ID {$$ = FormalDecl(yylval.name, $1.type);} ;
 Statements:		Statement {$$ = Statements($1.type);} //Done
                     | Statements Statement{} ; //nothing
-Statement:		LBRACE {Framework::getInstance().addScope(Scope::BLOCK);} Statements
-                         {Framework::getInstance().popScope();} RBRACE {} // Done
+Statement:		LBRACE {Framework::getInstance().addScope(Scope::BLOCK);}
+                Statements {Framework::getInstance().popScope();}
+                RBRACE {}
                     | Type ID SC { Framework::getInstance().insertVariableIntoTopScope(Variable(yylval.name,$1.type));} // Done
                     | Type ID ASSIGN Exp SC { Framework::getInstance().insertVariableIntoTopScope(Variable(yylval.name,$1.type));} // Done
                     | ID ASSIGN Exp SC {} //nothing
@@ -188,62 +191,51 @@ Statement:		LBRACE {Framework::getInstance().addScope(Scope::BLOCK);} Statements
                     | IF
                     LPAREN
                     Exp
-                    RPAREN
-                    Statement{
-                        printf("-----------if-------------");
-                        if ($3.type == "BOOL"){
-                            Framework::getInstance().addScope(Scope::IF);
-                        }
-                        else{
-                             output::errorMismatch(yylineno);
-                             exit(0);
+                    RPAREN marker_RPAREN
+                    Statement marker_STATEMENT {
+                        if ($3.type != "BOOL"){
+                            output::errorMismatch(yylineno);
+                            myExit();
                         }
                     }
                     | IF
                     LPAREN
                     Exp
-                    RPAREN {Framework::getInstance().addScope(Scope::IF);}
-                    Statement {Framework::getInstance().popScope();}
+                    RPAREN marker_RPAREN
+                    Statement marker_STATEMENT
                     ELSE {Framework::getInstance().addScope(Scope::IF);}
                     Statement {
                         Framework::getInstance().popScope();
                         if ($3.type != "BOOL"){
                             output::errorMismatch(yylineno);
-                            exit(0);
+                            myExit();
                         }
                     }
                     | WHILE LPAREN Exp RPAREN {Framework::getInstance().addScope(Scope::LOOP);} Statement {Framework::getInstance().popScope();} {
                     if ($3.type != "BOOL"){
                          output::errorMismatch(yylineno);
-                         exit(0);
+                         myExit();
                     }
 
                     }
                     | BREAK SC{
                         if(Framework::getInstance().getTopScope().getScopeType() != Scope::LOOP){
                              output::errorUnexpectedBreak(yylineno);
-                             exit(0);
+                             myExit();
                     }
                      }
                     | CONTINUE SC{
                         if(Framework::getInstance().getTopScope().getScopeType() != Scope::LOOP){
                             output::errorUnexpectedContinue(yylineno);
-                            exit(0);
+                            myExit();
                         }
                     }
 Call:			ID //{$1.name = yylval.name;}
                 LPAREN
                 ExpList
                 RPAREN {
-                        cout << "$3.arrguments_list.size() = " << $3.arrguments_list.size() << endl; // DEBUG
                         try{
                             string type = Framework::getInstance()[$1.name].type; // check the syntax. need Framework::getInstance().symbol_table[$1.name] to be a "Function" struct
-
-                            cout << "varsListToTypesList(dynamic_cast<Function&>(Framework::getInstance()[$1.name]).getParameters()) = " << endl; //DEBUG
-                            for (auto param : varsListToTypesList(dynamic_cast<Function&>(Framework::getInstance()[$1.name]).getParameters())) cout << param << ", ";
-                            cout << endl << "$3.arrguments_list = " << endl;
-                            for (auto param : $3.arrguments_list) cout << param << ", ";
-                            cout << endl;
 
                             if(varsListToTypesList(dynamic_cast<Function&>(Framework::getInstance()[$1.name]).getParameters()) != $3.arrguments_list){
                                 list<Variable> params = dynamic_cast<Function&>(Framework::getInstance()[$1.name]).getParameters();
@@ -255,7 +247,7 @@ Call:			ID //{$1.name = yylval.name;}
                         }
                         catch(Exceptions::IdentifierDoesNotExistException &e){
                             output::errorUndefFunc(yylineno, $1.name);
-                            exit(0);
+                            myExit();
                         }
                     }
                     | ID LPAREN RPAREN {
@@ -266,7 +258,7 @@ Call:			ID //{$1.name = yylval.name;}
                         }
                         catch(Exceptions::IdentifierDoesNotExistException &e){
                             output::errorUndefFunc(yylineno, yylval.name);
-                            exit(0);
+                            myExit();
                         }
                     }; //
 ExpList:		Exp {   $$ = ExpList(); // making the one size list by adding the EXP type into the list
@@ -289,17 +281,17 @@ Exp:			LPAREN Exp RPAREN {$$ =  Exp($2.type);} //
                         string res_type = typeBinopMultiplicativeChecking($1.type, $3.type);
                         $$ = Exp(res_type);
                     }
-                    |{
+                    | ID {
                             try{
                                 $$ =  Exp(Framework::getInstance()[yylval.name].type);
                             }
                             catch(Exceptions::IdentifierDoesNotExistException &e){
                                 output::errorDef(yylineno, yylval.name);
-                                exit(0);
+                                myExit();
                             }
 
 
-                      } //
+                    } //
                     | Call {$$ =  Exp($1.type);}
                     | NUM {$$ = Exp("INT");}
                     | NUM B {$$ =  Exp("BYTE");}
@@ -309,7 +301,7 @@ Exp:			LPAREN Exp RPAREN {$$ =  Exp($2.type);} //
                     | NOT Exp {
                         if($2.type != "BOOL"){
                              output::errorMismatch(yylineno);
-                             exit(0);
+                             myExit();
                         }
                         else{
                             $$ =  Exp("BOOL");
@@ -318,7 +310,7 @@ Exp:			LPAREN Exp RPAREN {$$ =  Exp($2.type);} //
                     | Exp AND Exp {
                         if($1.type != "BOOL" || $3.type != "BOOL"){
                              output::errorMismatch(yylineno);
-                             exit(0);
+                             myExit();
                        }
                        else{
                            $$ =  Exp("BOOL");
@@ -327,16 +319,16 @@ Exp:			LPAREN Exp RPAREN {$$ =  Exp($2.type);} //
                     | Exp OR Exp{
                         if($1.type != "BOOL" || $3.type != "BOOL"){
                              output::errorMismatch(yylineno);
-                             exit(0);
+                             myExit();
                        }
                        else{
                            $$ =  Exp("BOOL");
                        }
                     }
                     | Exp RELOP_RELATIONAL Exp {
-                        if(($1.type != "INT" && $1.type != "BYTE") || ($2.type != "INT" && $2.type != "BYTE")){
+                        if(($1.type != "INT" && $1.type != "BYTE") || ($3.type != "INT" && $3.type != "BYTE")){
                              output::errorMismatch(yylineno);
-                             exit(0);
+                             myExit();
                         }
                         else{
                             $$ =  Exp ("BOOL");
@@ -345,7 +337,7 @@ Exp:			LPAREN Exp RPAREN {$$ =  Exp($2.type);} //
                     | Exp RELOP_EQUALITY Exp {
                         if(($1.type != "INT" && $1.type != "BYTE") || ($2.type != "INT" && $2.type != "BYTE")){
                              output::errorMismatch(yylineno);
-                             exit(0);
+                             myExit();
                       }
                       else{
                           $$ =  Exp ("BOOL");
@@ -354,18 +346,20 @@ Exp:			LPAREN Exp RPAREN {$$ =  Exp($2.type);} //
                     | LPAREN Type RPAREN Exp {
                         if($2.type != "INT" || $4.type !="SET"){
                              output::errorMismatch(yylineno);
-                             exit(0);
+                             myExit();
                         }
                         else{
                             $$ =  Exp("INT");
                         }
 
                     };
+marker_RPAREN:      /*epsilon*/ {Framework::getInstance().addScope(Scope::IF);}
+marker_STATEMENT:   /*epsilon*/ {Framework::getInstance().popScope();}
 
 %%
 void yyerror(const char*){
 	output::errorSyn(yylineno);
-	exit(0);
+	myExit();
 }
 
 int main(){

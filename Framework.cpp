@@ -63,7 +63,6 @@ bool Framework::contains(const string &name) {
 }
 
 void Framework::addScope(enum Scope::ScopeType scopeType) {
-    
     scopes.push(Scope(scopeType, scopes.top().getNextOffset()));
 }
 
@@ -92,20 +91,25 @@ Framework& Framework::getInstance() {
 }
 
 void Framework::popScope() {
+    output::endScope();
+
     for (const Variable& var : scopes.top().variables){
         output::printID(var.name, var.offset, var.type);
         symbol_table.erase(var.name);
     }
 
     scopes.pop();
-    output::endScope();
 }
 
 Framework::~Framework() {
-    for (const Function& func : functions){
-        const list<string> argsTypesList = varsListToTypesList(func.getParameters());
-        vector<string> argsTypesVector = vector<string>(argsTypesList.begin(), argsTypesList.end());
-        output::printID(func.name, func.offset, output::makeFunctionType(func.type, argsTypesVector));
+    if (!exitOnError) {
+        popScope();
+
+        for (const Function &func : functions) {
+            const list<string> argsTypesList = varsListToTypesList(func.getParameters());
+            vector<string> argsTypesVector = vector<string>(argsTypesList.begin(), argsTypesList.end());
+            output::printID(func.name, func.offset, output::makeFunctionType(func.type, argsTypesVector));
+        }
     }
 }
 
