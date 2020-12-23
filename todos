@@ -1,10 +1,10 @@
-todo - parser:
+t.odo - parser:
 1. recursion solution - entering the function and function-parameters into the symbol_table before its implementation - both,think
 2. void main()- akiva - DONE
 3. errors - akiva
 4. type-safety: in - shlomi
 5. print,printi  akiva - DONE
-6. todo's parser - shlomi
+6. t.odo's parser - shlomi
 
 Framwork: done for now
 

@@ -25,7 +25,7 @@ int Scope::getNextOffset() const {
 
 void Framework::insertVariableIntoTopScope(const Variable &newVar) {
     
-    if (contains(newVar.name)) throw Exceptions::AlreadyExistsException(0, newVar.name); //FIXME: 0 is only a placeholder number, should be lineno
+    if (contains(newVar.name)) throw Exceptions::AlreadyExistsException(0, newVar.name); //FIXME: 0 is only a placeholder number, should be lineno - update: may not need to fix (since printError function is never used)
     Variable& addedVar = scopes.top().insert(newVar);
     symbol_table.insert({newVar.name, &addedVar});
 }
@@ -47,7 +47,7 @@ Symbol &Framework::operator[](const string &name) {
     try{
         return *(symbol_table.at(name));
     } catch(std::out_of_range&) {
-        throw Exceptions::IdentifierDoesNotExistException(0, name); //FIXME: 0 is only a placeholder number, should be lineno
+        throw Exceptions::IdentifierDoesNotExistException(0, name); //FIXME: 0 is only a placeholder number, should be lineno - update: may not need to fix (since printError function is never used)
     }
 
 }

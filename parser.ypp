@@ -128,8 +128,8 @@
 //TODO: ensure type safety on everything (a value can become it's own type.  A byte can become an int.) ("in" relop is used byte/int in set)
 //DONE: errors
 //DONE: print, printi
-//TODO: complete Framework class
-//TODO: Recursion problem - undefined at call time
+//DONE: complete Framework class
+//DONE: Recursion problem - undefined at call time - verify that we pass (should pass already)
 //TODO: enforce size limitations on set and byte (255)
 //DONE: enforce existence of void main() function
 
