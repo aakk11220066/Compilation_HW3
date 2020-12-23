@@ -19,8 +19,9 @@ class Scope{
 public:
     enum ScopeType{IF, LOOP, FUNCTION, BLOCK};
 
-private:
     std::deque<Variable> variables;
+
+private:
     int nextOffset;
     enum ScopeType scopeType;
 
@@ -29,9 +30,7 @@ public:
 
     ScopeType getScopeType() const;
 
-    Variable& insert(const Variable& newVar, unordered_map<string, Symbol*>& symbol_table);
-
-    virtual ~Scope();
+    Variable& insert(const Variable& newVar);
 
     Scope(enum ScopeType scopeType, int offset);
 };
@@ -53,6 +52,7 @@ public:
 
     static Framework& getInstance();
     void insertVariableIntoTopScope(const Variable &newVar);
+    void addParamToLastFunc(const Variable& param);
     void addScope(enum Scope::ScopeType scopeType);
     void popScope(); //pops top scope off scopes stack
     virtual ~Framework();

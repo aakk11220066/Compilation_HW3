@@ -10,20 +10,18 @@ using std::string;
 //ABSTRACT CLASS
 class Symbol{
 public:
-    const string name, type;
-    const int offset = 0;
+    string name, type;
+    int offset = 0;
     virtual ~Symbol() = default;
 protected:
-    std::unordered_map<string, Symbol*>* symbol_table = nullptr; //only stored for the destructor
     Symbol(const string &name, const string &type);
-    Symbol(const string &name, const string &type, unordered_map<string, Symbol*>& symbol_table);
-    Symbol(const string &name, const string &type, int offset, unordered_map<string, Symbol*>& symbol_table);
+    Symbol(const string &name, const string &type, int offset);
 };
 
 class Variable : public Symbol{
 public:
     Variable(const string &name, const string &type); //For Shlomi's use
-    Variable(const string &name, const string &type, int offset, unordered_map<string, Symbol*>& symbol_table); //For Akiva's use
+    Variable(const string &name, const string &type, int offset); //For Akiva's use
     bool operator==(const Variable& other) const{
         return (name==other.name && type==other.type && offset == other.offset);
     }
@@ -31,13 +29,14 @@ public:
 };
 
 class Function : public Symbol{
-    std::list<Variable> params;
 public:
-    Function(const string &name, const string &type, std::list<Variable>& params); //For Shlomi's use
-    Function(const string &name, const string &type, unordered_map<string, Symbol *> &symbol_table, const list<Variable>& params);
+    std::list<Variable> params;
+
+    Function(const string &name, const string &type);
 
     //For Akiva's use
     const std::list<Variable>& getParameters() const;
+
     virtual ~Function() = default;
 };
 

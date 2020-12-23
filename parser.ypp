@@ -29,19 +29,21 @@
     class Formals : public NonTerminal{
         public:
         list<Variable> namesAndTypes;
-        Formals(list<Variable>& namesAndTypes) : NonTerminal("", ""), namesAndTypes(namesAndTypes) {}
+        Formals(list<Variable>& namesAndTypes) : NonTerminal("FORMALS", "FORMALS"), namesAndTypes(namesAndTypes) {
+            this->namesAndTypes = namesAndTypes;
+        }
     };
     class FormalsList : public NonTerminal{
         public:
             list<Variable> namesAndTypes;
-            FormalsList(const string& name, const string& type) : NonTerminal("", "") {
+            FormalsList(const string& name, const string& type) : NonTerminal("FORMALS LIST", "FORMALS LIST") {
                 namesAndTypes.push_back(Variable(name, type));
             }
 
     };
 	class FormalDecl : public NonTerminal{
 	public:
-	    FormalDecl(const string& name, const string& type) : NonTerminal(name, type) {}
+	    FormalDecl(const string& name, const string& type) : NonTerminal(name, type) {this->name = name; this->type = type;}
 	};
     class Statements : public NonTerminal{
     public:
@@ -65,7 +67,7 @@
 	};
     class Type : public NonTerminal{
         public:
-        Type(const string& type) : NonTerminal("", type) {}
+        Type(const string& type) : NonTerminal("", type) {this->type = type;}
     };
     class Exp : public NonTerminal{
         public:
@@ -111,7 +113,10 @@
 %left SC RPAREN RBRACE RBRACKET
 %right LBRACE LPAREN LBRACKET
 
-%right COMMA WHILE ELSE IF
+%right COMMA
+%right WHILE
+%right IF
+%right ELSE
 %nonassoc TRUE FALSE RETURN BREAK CONTINUE DOTS ID NUM STRING SET INT BYTE B BOOL VOID
 
 %%
@@ -129,32 +134,62 @@
 Program:		Funcs {};
 Funcs:			/*epsilon*/ {} //DONE: nothing
                     |FuncDecl Funcs {}; //DONE: nothing
-FuncDecl:		RetType ID LPAREN Formals RPAREN LBRACE {Framework::getInstance().addScope(Scope::FUNCTION);
-                                                            for (const Variable& var : $4.namesAndTypes){
-                                                                Framework::getInstance().insertVariableIntoTopScope(var);
-                                                            }
-                                                        } Statements {Framework::getInstance().popScope();
-                                                                     } RBRACE{
-                    Framework::getInstance().addFunction(Function(yylval.name,$1.type, $4.namesAndTypes));
-                } ; // TODO: add Function to symbol table with name, type, list_of_params.  Also add parameters (=list of names, types) to symbol table + function scope
+FuncDecl:		RetType
+                ID {
+                    Framework::getInstance().addScope(Scope::FUNCTION);
+                    Framework::getInstance().addFunction(Function(yylval.name,$1.type));
+                }
+                LPAREN
+                Formals {
+                    //add params
+                    int numParamsAddedSoFar = 0;
+                    for (const Variable& param : $5.namesAndTypes){
+                        Framework::getInstance().addParamToLastFunc(param);
+
+                        ++numParamsAddedSoFar;
+                        Variable offsetFixedParam = Variable(param.name, param.type, -numParamsAddedSoFar);
+                        cout << param.name << " offset = " << offsetFixedParam.offset << endl;
+                        Framework::getInstance().insertVariableIntoTopScope(offsetFixedParam);
+                    }
+                }
+                RPAREN
+                LBRACE
+                Statements
+                RBRACE {
+                    Framework::getInstance().popScope();
+                };
 RetType:		Type {$$ = RetType($1.type);} // DONE: extract type from Type
-                    | VOID {$$ = RetType($1.type);}; //DONE: RetType.type = "VOID"
+                    | VOID {$$ = RetType("VOID");}; //DONE: RetType.type = "VOID"
 Formals:		/*epsilon*/ {} //DONE: nothing
-                    | FormalsList {$$ = Formals($1.namesAndTypes);} ; // DONE: extract names, types from FormalsList.
-FormalsList:	FormalDecl {$$ = FormalsList($1.name, $1.type);} // changed: adding a list to formalsList struct
-                    | FormalDecl COMMA FormalsList{$$.addParamToFunc($1.name,$1.type);} ; //DONE: extract name, type from FormalDecl and append to list of names, types extracted from FormalsList
-FormalDecl:		Type ID{FormalDecl($1.type, $2.name);} ;
+                    | FormalsList {
+                        Formals formals = Formals($1.namesAndTypes);
+                        $$ = formals;
+                        $$.namesAndTypes = formals.namesAndTypes;
+                        //cout << "\n\nFormalsReceived.namesAndTypes.size() = " << $$.namesAndTypes.size() << endl;
+                    } ;
+FormalsList:	FormalDecl {
+                    FormalsList formalsList = FormalsList($1.name, $1.type);
+                    $$ = formalsList;
+                    $$.namesAndTypes = formalsList.namesAndTypes;
+                    //cout << "\n\nReceived.namesAndTypes.size() = " << $$.namesAndTypes.size() << endl;
+                }
+                    | FormalDecl COMMA FormalsList{$$ = $3; $$.namesAndTypes.push_front(Variable($1.name, $1.type));} ; //DONE: extract name, type from FormalDecl and append to list of names, types extracted from FormalsList
+FormalDecl:		Type ID {$$ = FormalDecl(yylval.name, $1.type);} ;
 Statements:		Statement {$$ = Statements($1.type);} //Done
                     | Statements Statement{} ; //nothing
 Statement:		LBRACE {Framework::getInstance().addScope(Scope::BLOCK);} Statements
                          {Framework::getInstance().popScope();} RBRACE {} // Done
-                    | Type ID SC { Framework::getInstance().insertVariableIntoTopScope(Variable($2.name,$1.type));} // Done
-                    | Type ID ASSIGN Exp SC { Framework::getInstance().insertVariableIntoTopScope(Variable($2.name,$1.type));} // Done
-                    | ID ASSIGN Exp SC {printf("------=-------");} //nothing
+                    | Type ID SC { Framework::getInstance().insertVariableIntoTopScope(Variable(yylval.name,$1.type));} // Done
+                    | Type ID ASSIGN Exp SC { Framework::getInstance().insertVariableIntoTopScope(Variable(yylval.name,$1.type));} // Done
+                    | ID ASSIGN Exp SC {} //nothing
                     | Call SC {} //nothing
                     | RETURN SC {$$ = Statement("VOID");} // Done
                     | RETURN Exp SC {$$ = Statement($2.type);} // Done
-                    | IF LPAREN Exp RPAREN Statement{
+                    | IF
+                    LPAREN
+                    Exp
+                    RPAREN
+                    Statement{
                         printf("-----------if-------------");
                         if ($3.type == "BOOL"){
                             Framework::getInstance().addScope(Scope::IF);
@@ -163,15 +198,19 @@ Statement:		LBRACE {Framework::getInstance().addScope(Scope::BLOCK);} Statements
                              output::errorMismatch(yylineno);
                              exit(0);
                         }
-
                     }
-                    | IF LPAREN  Exp  RPAREN {Framework::getInstance().addScope(Scope::IF);}
-                     Statement {Framework::getInstance().popScope();} ELSE {Framework::getInstance().addScope(Scope::IF);} Statement {Framework::getInstance().popScope();} {
+                    | IF
+                    LPAREN
+                    Exp
+                    RPAREN {Framework::getInstance().addScope(Scope::IF);}
+                    Statement {Framework::getInstance().popScope();}
+                    ELSE {Framework::getInstance().addScope(Scope::IF);}
+                    Statement {
+                        Framework::getInstance().popScope();
                         if ($3.type != "BOOL"){
                             output::errorMismatch(yylineno);
                             exit(0);
                         }
-
                     }
                     | WHILE LPAREN Exp RPAREN {Framework::getInstance().addScope(Scope::LOOP);} Statement {Framework::getInstance().popScope();} {
                     if ($3.type != "BOOL"){
@@ -192,10 +231,20 @@ Statement:		LBRACE {Framework::getInstance().addScope(Scope::BLOCK);} Statements
                             exit(0);
                         }
                     }
-Call:			ID LPAREN ExpList RPAREN {
-                        //TODO: do not use symbol_table.operator[], instead use Framework.operator[].  And don't check if returned NULL, instead just catch IdentifierDoesNotExistException
+Call:			ID //{$1.name = yylval.name;}
+                LPAREN
+                ExpList
+                RPAREN {
+                        cout << "$3.arrguments_list.size() = " << $3.arrguments_list.size() << endl; // DEBUG
                         try{
                             string type = Framework::getInstance()[$1.name].type; // check the syntax. need Framework::getInstance().symbol_table[$1.name] to be a "Function" struct
+
+                            cout << "varsListToTypesList(dynamic_cast<Function&>(Framework::getInstance()[$1.name]).getParameters()) = " << endl; //DEBUG
+                            for (auto param : varsListToTypesList(dynamic_cast<Function&>(Framework::getInstance()[$1.name]).getParameters())) cout << param << ", ";
+                            cout << endl << "$3.arrguments_list = " << endl;
+                            for (auto param : $3.arrguments_list) cout << param << ", ";
+                            cout << endl;
+
                             if(varsListToTypesList(dynamic_cast<Function&>(Framework::getInstance()[$1.name]).getParameters()) != $3.arrguments_list){
                                 list<Variable> params = dynamic_cast<Function&>(Framework::getInstance()[$1.name]).getParameters();
                                 const std::list<string> typesList = varsListToTypesList(params);
@@ -208,25 +257,25 @@ Call:			ID LPAREN ExpList RPAREN {
                             output::errorUndefFunc(yylineno, $1.name);
                             exit(0);
                         }
-
-
                     }
                     | ID LPAREN RPAREN {
 
                         try{
-                               string type = Framework::getInstance()[$1.name].type;
-                               $$ = Call ($1.name, type);
+                               string type = Framework::getInstance()[yylval.name].type;
+                               $$ = Call (yylval.name, type);
                         }
                         catch(Exceptions::IdentifierDoesNotExistException &e){
-                            output::errorUndefFunc(yylineno, $1.name);
+                            output::errorUndefFunc(yylineno, yylval.name);
                             exit(0);
                         }
                     }; //
 ExpList:		Exp {   $$ = ExpList(); // making the one size list by adding the EXP type into the list
-                        $$.arrguments_list.push_back($1.type);
-
+                        $$.arrguments_list.push_front($1.type);
                      } //
-                    | Exp COMMA ExpList { $$.arrguments_list.push_back($1.type);}// adding into the list
+                    | Exp COMMA ExpList {
+                        $$ = $3;
+                        $$.arrguments_list.push_front($1.type);// adding into the list
+                    }
 Type:			INT {$$ = Type("INT");}
                     | BYTE{$$ =  Type("BYTE");}
                     | BOOL {$$ =  Type("BOOL");}
@@ -240,12 +289,12 @@ Exp:			LPAREN Exp RPAREN {$$ =  Exp($2.type);} //
                         string res_type = typeBinopMultiplicativeChecking($1.type, $3.type);
                         $$ = Exp(res_type);
                     }
-                    | ID {
+                    |{
                             try{
-                                $$ =  Exp(Framework::getInstance()[$1.name].type);
+                                $$ =  Exp(Framework::getInstance()[yylval.name].type);
                             }
                             catch(Exceptions::IdentifierDoesNotExistException &e){
-                                output::errorDef(yylineno, $1.name);
+                                output::errorDef(yylineno, yylval.name);
                                 exit(0);
                             }
 
@@ -316,6 +365,7 @@ Exp:			LPAREN Exp RPAREN {$$ =  Exp($2.type);} //
 %%
 void yyerror(const char*){
 	output::errorSyn(yylineno);
+	exit(0);
 }
 
 int main(){

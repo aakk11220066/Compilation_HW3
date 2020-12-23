@@ -3,6 +3,7 @@
 
 #include <string>
 #include <list>
+#include <iostream>
 using namespace std;
 
 #include "Symbol.h"
@@ -10,20 +11,18 @@ using namespace std;
 class NonTerminal{
 public:
     string name;
-    const string type;
+    string type;
     list<Variable> namesAndTypes = list<Variable>();
     list<string> arrguments_list = list<string>();
     NonTerminal() = default;
     NonTerminal(const string& name, const string& type) : name(name), type(type) {}
-    NonTerminal& operator=(const NonTerminal& other){
-        //  name = other.name;
-        //  type = other.type;
-        //  namesAndTypes = other.namesAndTypes;
+    NonTerminal& operator=(const NonTerminal& other){ //sometimes other seems to point to the wrong NonTerminal for some reason
+        name = other.name;
+        type = other.type;
+        namesAndTypes = other.namesAndTypes;
+        arrguments_list = other.arrguments_list;
         return *this;
-    }
-    void addParamToFunc(const string& name,const string& type){
-        this->namesAndTypes.push_back(Variable(name, type));
-    }
+    };
 };
 
 #endif //HW3_SOURCE_H
