@@ -15,6 +15,13 @@
     int yylex();
     void yyerror(const char*);
     bool isInWhile = false;
+
+
+    void myExit(){
+         Framework::getInstance().exitOnError = true;
+         exit(0);
+    }
+
     bool isByteSize(string& val){
         int dec_val = std::stoi(val);
         if (dec_val <=255 && dec_val >= 0){
@@ -23,10 +30,18 @@
         return false;
     }
 
-    void myExit(){
-        Framework::getInstance().exitOnError = true;
-        exit(0);
-    }
+    //check if the set size is less than 255
+
+    void isSetSize(const string& first_num_string, const string& second_num_string){
+            int first_num = std::stoi(first_num_string);
+            int second_num = std::stoi(second_num_string);
+            if (second_num - first_num > 255 || second_num - first_num <= 0){
+                output::errorSetTooLarge(yylineno, first_num_string, second_num_string);
+                myExit();
+            }
+        }
+
+
 
 	//NonTerminal classes
     class Program : public NonTerminal{};
@@ -119,6 +134,30 @@
         }
         output::errorMismatch(yylineno);
         myExit();
+    }
+
+    bool isAssignTypeCheck(const string& accepting_type, const string& entering_type){
+            if(accepting_type == entering_type){
+                return true;
+            }
+            if(accepting_type == "INT" && entering_type == "BYTE"){
+                return true;
+            }
+            return false;
+        }
+
+    bool listInsertable(const list<string>& param_list, const list<string>& arg_list){
+        if (param_list.size() != arg_list.size()) return false;
+
+        std::string::const_iterator param_iter = param_list.front();
+        std::string::const_iterator arg_iter = arg_list.front();
+
+        for (int i = 0; i<param_list.size(); ++i){
+           if (!isAssignTypeCheck(*param_iter, *arg_iter)) return false;
+            ++param_iter;
+            ++arg_iter;
+        }
+        return true;
     }
 
 //
@@ -276,7 +315,7 @@ Call:			ID //{$1.name = yylval.name;}
                         try{
                             string type = Framework::getInstance()[$1.name].type; // check the syntax. need Framework::getInstance().symbol_table[$1.name] to be a "Function" struct
 
-                            if(varsListToTypesList(dynamic_cast<Function&>(Framework::getInstance()[$1.name]).getParameters()) != $3.arrguments_list){
+                            if(!listInsertable(varsListToTypesList(dynamic_cast<Function&>(Framework::getInstance()[$1.name]).getParameters()), $3.arrguments_list)){
                                 list<Variable> params = dynamic_cast<Function&>(Framework::getInstance()[$1.name]).getParameters();
                                 const std::list<string> typesList = varsListToTypesList(params);
                                 vector<string> argTypes = vector<string>(typesList.begin(), typesList.end());
@@ -311,7 +350,11 @@ ExpList:		Exp {   $$ = ExpList(); // making the one size list by adding the EXP 
 Type:			INT {$$ = Type("INT");}
                     | BYTE{$$ =  Type("BYTE");}
                     | BOOL {$$ =  Type("BOOL");}
-                    | SET LBRACKET NUM DOTS NUM RBRACKET {$$ = Type("SET");};
+                    | SET LBRACKET NUM{$$ = Type("SET"); $3.name = yylval.name; } DOTS NUM RBRACKET {
+                        isSetSize($3.name, yylval.name);
+                        $$ = Type("SET");
+                    };
+
 Exp:			LPAREN Exp RPAREN {$$ =  Exp($2.type);} //
                     | Exp BINOP_ADDITIVE Exp {
                         string res_type = typeBinopAddChecking($1.type, $3.type);
