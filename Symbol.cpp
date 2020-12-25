@@ -11,7 +11,7 @@ list<string> varsListToTypesList(const list<Variable>& varList){
 Symbol::Symbol(const string &name, const string &type) : name(name), type(type) {}
 
 Symbol::Symbol(const string &name, const string &type, int offset)
-    : name(name), type(type), offset(offset){}
+        : name(name), type(type), offset(offset){}
 
 Variable::Variable(const string &name, const string &type) : Symbol(name, type) {}
 
@@ -22,5 +22,3 @@ Function::Function(const string &name, const string &type) : Symbol(name, type) 
 const std::list<Variable> &Function::getParameters() const {
     return params;
 }
-
-

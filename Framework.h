@@ -1,6 +1,3 @@
-//
-// Created by User on 2020-12-08.
-//
 
 #ifndef HW3_FRAMEWORK_H
 #define HW3_FRAMEWORK_H
@@ -51,6 +48,7 @@ public:
     bool mainExists = false;
     bool exitOnError = false;
 
+    const Function& getLastAddedFunction();
     static Framework& getInstance();
     void insertVariableIntoTopScope(const Variable &newVar);
     void addParamToLastFunc(const Variable& param);

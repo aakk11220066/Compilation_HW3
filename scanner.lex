@@ -11,7 +11,8 @@
 
 
 relop_equality          ((\=\=)|(\!\=))
-relop_relational        ((\<)|(\>)|(\<\=)|(\>\=)|in)
+relop_relational        ((\<)|(\>)|(\<\=)|(\>\=))
+in                      (in)
 binop_additive          (\+|\-)
 binop_multiplicative    (\*|\/|\%)
 comment                 (\/\/[^\r\n]*[\r|\n|\r\n]?)
@@ -26,6 +27,7 @@ new_line                ($|[\r\n])
 space                   [\ \t\r\n]
 
 %%
+
 
 void                        return VOID;
 int                         return INT;
@@ -54,6 +56,7 @@ continue                    return CONTINUE;
 \]                          return RBRACKET;
 \=                          return ASSIGN;
 \.\.                        return DOTS;
+{in}                          return IN_RELOP;
 {relop_relational}          return RELOP_RELATIONAL;
 {relop_equality}            return RELOP_EQUALITY;
 {binop_multiplicative}      return BINOP_MULTIPLICATIVE;
@@ -64,7 +67,11 @@ continue                    return CONTINUE;
                                 yylval.name = strdup(yytext);
                                 return ID;
                             }
-{num}                       return NUM;
+{num}                       {
+                                yylval = NonTerminal(strdup(yytext), "");
+                                yylval.name = strdup(yytext);
+                                return NUM;
+                            }
 {good_string}               return STRING;
 {space}                     ;
 .                           output::errorLex(yylineno); exit(0);
