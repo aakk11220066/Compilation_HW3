@@ -149,8 +149,8 @@
     bool listInsertable(const list<string>& param_list, const list<string>& arg_list){
         if (param_list.size() != arg_list.size()) return false;
 
-        std::string::const_iterator param_iter = param_list.front();
-        std::string::const_iterator arg_iter = arg_list.front();
+        std::list<std::string>::const_iterator param_iter = param_list.cbegin();
+        std::list<std::string>::const_iterator arg_iter = arg_list.cbegin();
 
         for (int i = 0; i<param_list.size(); ++i){
            if (!isAssignTypeCheck(*param_iter, *arg_iter)) return false;
