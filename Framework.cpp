@@ -53,13 +53,7 @@ Symbol &Framework::operator[](const string &name) {
 }
 
 bool Framework::contains(const string &name) {
-
-    try{
-        symbol_table.at(name);
-    } catch(std::out_of_range&){
-        return false;
-    }
-    return true;
+    return symbol_table.find(name) != symbol_table.end();
 }
 
 void Framework::addScope(enum Scope::ScopeType scopeType) {

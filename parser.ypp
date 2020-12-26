@@ -369,7 +369,7 @@ Exp:			LPAREN Exp RPAREN {$$ =  Exp($2.type);} //
                                 $$ =  Exp(Framework::getInstance()[yylval.name].type);
                             }
                             catch(Exceptions::IdentifierDoesNotExistException &e){
-                                output::errorDef(yylineno, yylval.name);
+                                output::errorUndef(yylineno, yylval.name);
                                 myExit();
                             }
 
