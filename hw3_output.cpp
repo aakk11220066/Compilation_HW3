@@ -1,7 +1,7 @@
 #include <iostream>
 #include "hw3_output.hpp"
 #include <sstream>
-
+//
 using namespace std;
 
 void output::endScope(){

@@ -107,11 +107,12 @@
         if(type1 == "BYTE" || type2 == "BYTE"){
             return "BYTE";
         }
-        if(type1 == "SET" && type2 == "SET"){
-            output::errorMismatch(yylineno);
-            myExit();
+        if((type1 == "SET" || type2 == "SET") && !(type1 == "SET" && type2 == "SET")){
+            return "SET";
         }
-        return "SET";
+
+        output::errorMismatch(yylineno);
+        myExit();
     }
 
     string typeBinopMultiplicativeChecking(string type1, string type2){
@@ -242,13 +243,17 @@ Statement:		LBRACE {Framework::getInstance().addScope(Scope::BLOCK);}
                 Statements {Framework::getInstance().popScope();}
                 RBRACE {}
                     | Type ID SC { Framework::getInstance().insertVariableIntoTopScope(Variable(yylval.name,$1.type));} // Done
-                    | Type ID  { Framework::getInstance().insertVariableIntoTopScope(Variable(yylval.name,$1.type));} ASSIGN Exp SC {
-                            assignTypeCheck($1.type,$5.type);
-
+                    | Type ID ASSIGN Exp SC {
+                            Framework::getInstance().insertVariableIntoTopScope(Variable($2.name,$1.type));
+                            assignTypeCheck($1.type,$4.type);
                     }
                     | ID ASSIGN Exp SC {
-                           string accepting_type = Framework::getInstance()[$1.name].type;
-                           assignTypeCheck(accepting_type, $3.type);
+                        string accepting_type = Framework::getInstance()[$1.name].type;
+                        assignTypeCheck(accepting_type, $3.type);
+                        if (Framework::getInstance().isFunction($1.name)){
+                            output::errorUndef(yylineno, $1.name);
+                            myExit();
+                        }
                     }
 
                     | Call SC {} //nothing
@@ -313,7 +318,8 @@ Call:			ID //{$1.name = yylval.name;}
                 ExpList
                 RPAREN {
                         try{
-                            string type = Framework::getInstance()[$1.name].type; // check the syntax. need Framework::getInstance().symbol_table[$1.name] to be a "Function" struct
+                            string type = Framework::getInstance()[$1.name].type;
+                            if (!Framework::getInstance().isFunction($1.name)) throw Exceptions::IdentifierDoesNotExistException(yylineno, $1.name);
 
                             if(!listInsertable(varsListToTypesList(dynamic_cast<Function&>(Framework::getInstance()[$1.name]).getParameters()), $3.arrguments_list)){
                                 list<Variable> params = dynamic_cast<Function&>(Framework::getInstance()[$1.name]).getParameters();
@@ -333,6 +339,8 @@ Call:			ID //{$1.name = yylval.name;}
 
                         try{
                                string type = Framework::getInstance()[yylval.name].type;
+                               if (!Framework::getInstance().isFunction(yylval.name)) throw Exceptions::IdentifierDoesNotExistException(yylineno, yylval.name);
+
                                $$ = Call (yylval.name, type);
                         }
                         catch(Exceptions::IdentifierDoesNotExistException &e){
@@ -367,14 +375,16 @@ Exp:			LPAREN Exp RPAREN {$$ =  Exp($2.type);} //
                     | ID {
                             try{
                                 $$ =  Exp(Framework::getInstance()[yylval.name].type);
+                                if (Framework::getInstance().isFunction(yylval.name)){
+                                    output::errorUndef(yylineno, yylval.name);
+                                    myExit();
+                                }
                             }
                             catch(Exceptions::IdentifierDoesNotExistException &e){
                                 output::errorUndef(yylineno, yylval.name);
                                 myExit();
                             }
-
-
-                    } //
+                    }
                     | Call {$$ =  Exp($1.type);}
                     | NUM {$$ = Exp("INT");}
                     | NUM B {
@@ -463,13 +473,22 @@ void yyerror(const char*){
 int main(){
     try{
         yyparse();
-        if (!Framework::getInstance().mainExists) {
-            output::errorMainMissing();;
-            myExit();
-        }
     }
     catch (const Exceptions::AlreadyExistsException& e){
         output::errorDef(yylineno, e.name);
+        myExit();
+    }
+    catch (const Exceptions::IdentifierDoesNotExistException& e){
+        output::errorUndef(yylineno, e.name);
+        myExit();
+    }
+
+    bool mainExists = false;
+    for (const Function& func : Framework::getInstance().functions){
+        if (func.name == "main" && func.type == "VOID" && func.getParameters().empty()) mainExists = true;
+    }
+    if (!mainExists){
+        output::errorMainMissing();
         myExit();
     }
 }

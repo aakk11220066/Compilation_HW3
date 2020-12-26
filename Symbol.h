@@ -13,6 +13,7 @@ public:
     string name, type;
     int offset = 0;
     virtual ~Symbol() = default;
+
 protected:
     Symbol(const string &name, const string &type);
     Symbol(const string &name, const string &type, int offset);

@@ -8,6 +8,8 @@ using namespace std;
 
 #include "Symbol.h"
 
+void myExit();
+
 class NonTerminal{
 public:
     string name;

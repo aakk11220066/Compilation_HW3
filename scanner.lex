@@ -74,7 +74,7 @@ continue                    return CONTINUE;
                             }
 {good_string}               return STRING;
 {space}                     ;
-.                           output::errorLex(yylineno); exit(0);
+.                           {output::errorLex(yylineno); myExit();}
 
 %%
 

@@ -35,17 +35,15 @@ public:
 
 
 class Framework {
-private:
+public:
     std::stack<Scope> scopes;
     std::deque<Function> functions;
 
-public:
     std::unordered_map<string, Symbol*> symbol_table;
 
     Framework();
 
     bool contains(const string& name);
-    bool mainExists = false;
     bool exitOnError = false;
 
     const Function& getLastAddedFunction();
@@ -57,6 +55,7 @@ public:
     virtual ~Framework();
 
     void addFunction(const Function &newFunc);
+    bool isFunction(const string &name);
     Symbol& operator[](const string& name); //for accessing the symbol_table
     Scope& getTopScope();
 };
