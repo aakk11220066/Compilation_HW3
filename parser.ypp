@@ -369,7 +369,7 @@ Exp:			LPAREN Exp RPAREN {$$ =  Exp($2.type);} //
                                 $$ =  Exp(Framework::getInstance()[yylval.name].type);
                             }
                             catch(Exceptions::IdentifierDoesNotExistException &e){
-                                output::errorDef(yylineno, yylval.name);
+                                output::errorUndef(yylineno, yylval.name);
                                 myExit();
                             }
 
@@ -461,6 +461,15 @@ void yyerror(const char*){
 }
 
 int main(){
-    yyparse();
-    if (!Framework::getInstance().mainExists) output::errorMainMissing();;
+    try{
+        yyparse();
+        if (!Framework::getInstance().mainExists) {
+            output::errorMainMissing();;
+            myExit();
+        }
+    }
+    catch (const Exceptions::AlreadyExistsException& e){
+        output::errorDef(yylineno, e.name);
+        myExit();
+    }
 }

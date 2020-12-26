@@ -4,6 +4,12 @@
 #include <iostream>
 #define DEBUG_PRINT(str) std::cout << str << std::endl
 
+/*void symbol_table_str(std::unordered_map<string, Symbol*>& map){
+    cout << "symbol table contents : ";
+    for (const std::pair<string, Symbol*> str_pair : map) cout << str_pair.first << ", ";
+    cout << endl;
+}*/
+
 //NOTE: must modify default offset of Variable to correct offset!
 Variable& Scope::insert(const Variable &newVar) {
     Variable addedVar = Variable("BAD", "BAD");
@@ -24,7 +30,6 @@ int Scope::getNextOffset() const {
 }
 
 void Framework::insertVariableIntoTopScope(const Variable &newVar) {
-
     if (contains(newVar.name)) throw Exceptions::AlreadyExistsException(0, newVar.name); //FIXME: 0 is only a placeholder number, should be lineno - update: may not need to fix (since printError function is never used)
     Variable& addedVar = scopes.top().insert(newVar);
     symbol_table.insert({newVar.name, &addedVar});
@@ -53,13 +58,7 @@ Symbol &Framework::operator[](const string &name) {
 }
 
 bool Framework::contains(const string &name) {
-
-    try{
-        symbol_table.at(name);
-    } catch(std::out_of_range&){
-        return false;
-    }
-    return true;
+    return symbol_table.find(name) != symbol_table.end();
 }
 
 void Framework::addScope(enum Scope::ScopeType scopeType) {
@@ -71,7 +70,6 @@ Scope &Framework::getTopScope() {
 }
 
 Framework::Framework() {
-
     scopes.push(std::move(Scope(Scope::BLOCK, 0)));
 
     Function printFunction = Function("print",  "VOID");
